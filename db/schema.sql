@@ -1,0 +1,173 @@
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255),
+  email VARCHAR(255) UNIQUE,
+  emailVerified DATETIME,
+  password VARCHAR(255),
+  image VARCHAR(255),
+  role ENUM('PRINTER', 'MANUFACTURER', 'CONSUMER', 'ADMIN') DEFAULT 'CONSUMER',
+  isVerified BOOLEAN DEFAULT FALSE,
+  cipponId VARCHAR(255),
+  companyName VARCHAR(255),
+  phone VARCHAR(255),
+  location VARCHAR(255),
+  bio TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Accounts table (for OAuth)
+CREATE TABLE IF NOT EXISTS accounts (
+  id VARCHAR(255) PRIMARY KEY,
+  userId VARCHAR(255) NOT NULL,
+  type VARCHAR(255) NOT NULL,
+  provider VARCHAR(255) NOT NULL,
+  providerAccountId VARCHAR(255) NOT NULL,
+  refresh_token TEXT,
+  access_token TEXT,
+  expires_at INT,
+  token_type VARCHAR(255),
+  scope VARCHAR(255),
+  id_token TEXT,
+  session_state VARCHAR(255),
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY provider_providerAccountId (provider, providerAccountId)
+);
+
+-- Sessions table
+CREATE TABLE IF NOT EXISTS sessions (
+  id VARCHAR(255) PRIMARY KEY,
+  sessionToken VARCHAR(255) UNIQUE,
+  userId VARCHAR(255) NOT NULL,
+  expires DATETIME NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Verification tokens table
+CREATE TABLE IF NOT EXISTS verification_tokens (
+  identifier VARCHAR(255) NOT NULL,
+  token VARCHAR(255) NOT NULL,
+  expires DATETIME NOT NULL,
+  UNIQUE KEY identifier_token (identifier, token)
+);
+
+-- Products table
+CREATE TABLE IF NOT EXISTS products (
+  id VARCHAR(255) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  category VARCHAR(255) NOT NULL,
+  images TEXT NOT NULL, -- Stored as JSON array of URLs
+  contactInfo TEXT,
+  ownerId VARCHAR(255) NOT NULL,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (ownerId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Agreements table
+CREATE TABLE IF NOT EXISTS agreements (
+  id VARCHAR(255) PRIMARY KEY,
+  initiatorId VARCHAR(255) NOT NULL,
+  receiverId VARCHAR(255) NOT NULL,
+  status ENUM('PROPOSED', 'ACTIVE', 'COMPLETED', 'DISPUTED') DEFAULT 'PROPOSED',
+  terms TEXT NOT NULL,
+  notes TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (initiatorId) REFERENCES users(id),
+  FOREIGN KEY (receiverId) REFERENCES users(id)
+);
+
+-- Agreement events table (for timeline)
+CREATE TABLE IF NOT EXISTS agreement_events (
+  id VARCHAR(255) PRIMARY KEY,
+  agreementId VARCHAR(255) NOT NULL,
+  status ENUM('PROPOSED', 'ACTIVE', 'COMPLETED', 'DISPUTED') NOT NULL,
+  actorId VARCHAR(255) NOT NULL,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (agreementId) REFERENCES agreements(id) ON DELETE CASCADE,
+  FOREIGN KEY (actorId) REFERENCES users(id)
+);
+
+-- Forum categories table
+CREATE TABLE IF NOT EXISTS forum_categories (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Forum threads table
+CREATE TABLE IF NOT EXISTS forum_threads (
+  id VARCHAR(255) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  authorId VARCHAR(255) NOT NULL,
+  categoryId VARCHAR(255) NOT NULL,
+  likes INT DEFAULT 0,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (authorId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (categoryId) REFERENCES forum_categories(id) ON DELETE CASCADE
+);
+
+-- Forum posts table
+CREATE TABLE IF NOT EXISTS forum_posts (
+  id VARCHAR(255) PRIMARY KEY,
+  content TEXT NOT NULL,
+  authorId VARCHAR(255) NOT NULL,
+  threadId VARCHAR(255) NOT NULL,
+  likes INT DEFAULT 0,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (authorId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (threadId) REFERENCES forum_threads(id) ON DELETE CASCADE
+);
+
+-- Demo classes table
+CREATE TABLE IF NOT EXISTS demo_classes (
+  id VARCHAR(255) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  videoUrl VARCHAR(255),
+  schedule DATETIME NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  isPaid BOOLEAN DEFAULT TRUE,
+  status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+  manufacturerId VARCHAR(255) NOT NULL,
+  category VARCHAR(255) NOT NULL,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (manufacturerId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Complaints table
+CREATE TABLE IF NOT EXISTS complaints (
+  id VARCHAR(255) PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  status ENUM('OPEN', 'UNDER_REVIEW', 'RESOLVED') DEFAULT 'OPEN',
+  userId VARCHAR(255) NOT NULL,
+  agreementId VARCHAR(255),
+  evidence TEXT, -- JSON array of evidence URLs
+  resolution TEXT,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (agreementId) REFERENCES agreements(id) ON DELETE SET NULL
+);
+
+-- Messages table
+CREATE TABLE IF NOT EXISTS messages (
+  id VARCHAR(255) PRIMARY KEY,
+  content TEXT NOT NULL,
+  senderId VARCHAR(255) NOT NULL,
+  receiverId VARCHAR(255) NOT NULL,
+  isRead BOOLEAN DEFAULT FALSE,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (senderId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (receiverId) REFERENCES users(id) ON DELETE CASCADE
+);

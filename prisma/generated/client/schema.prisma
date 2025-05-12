@@ -1,0 +1,213 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
+
+  @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
+  @@index([userId], map: "Account_userId_fkey")
+}
+
+model agreement {
+  id                               String           @id
+  initiatorId                      String
+  receiverId                       String
+  status                           agreement_status @default(PROPOSED)
+  terms                            String           @db.Text
+  notes                            String?          @db.Text
+  createdAt                        DateTime         @default(now())
+  updatedAt                        DateTime
+  user_agreement_initiatorIdTouser user             @relation("agreement_initiatorIdTouser", fields: [initiatorId], references: [id], map: "Agreement_initiatorId_fkey")
+  user_agreement_receiverIdTouser  user             @relation("agreement_receiverIdTouser", fields: [receiverId], references: [id], map: "Agreement_receiverId_fkey")
+  complaint                        complaint[]
+
+  @@index([initiatorId], map: "Agreement_initiatorId_fkey")
+  @@index([receiverId], map: "Agreement_receiverId_fkey")
+}
+
+model complaint {
+  id          String     @id
+  title       String
+  description String     @db.Text
+  status      String     @default("OPEN")
+  userId      String
+  agreementId String?
+  evidence    String?    @db.Text
+  resolution  String?    @db.Text
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime
+  agreement   agreement? @relation(fields: [agreementId], references: [id], map: "Complaint_agreementId_fkey")
+  user        user       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Complaint_userId_fkey")
+
+  @@index([agreementId], map: "Complaint_agreementId_fkey")
+  @@index([userId], map: "Complaint_userId_fkey")
+}
+
+model democlass {
+  id             String           @id
+  title          String
+  description    String           @db.Text
+  videoUrl       String?
+  schedule       DateTime
+  price          Float
+  isPaid         Boolean          @default(true)
+  status         democlass_status @default(PENDING)
+  manufacturerId String
+  category       String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  user           user             @relation(fields: [manufacturerId], references: [id], onDelete: Cascade, map: "DemoClass_manufacturerId_fkey")
+
+  @@index([manufacturerId], map: "DemoClass_manufacturerId_fkey")
+}
+
+model forumcategory {
+  id          String        @id
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  forumthread forumthread[]
+}
+
+model forumpost {
+  id          String      @id
+  content     String      @db.Text
+  authorId    String
+  threadId    String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  likes       Int         @default(0)
+  user        user        @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "ForumPost_authorId_fkey")
+  forumthread forumthread @relation(fields: [threadId], references: [id], onDelete: Cascade, map: "ForumPost_threadId_fkey")
+
+  @@index([authorId], map: "ForumPost_authorId_fkey")
+  @@index([threadId], map: "ForumPost_threadId_fkey")
+}
+
+model forumthread {
+  id            String        @id
+  title         String
+  content       String        @db.Text
+  authorId      String
+  categoryId    String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime
+  likes         Int           @default(0)
+  forumpost     forumpost[]
+  user          user          @relation(fields: [authorId], references: [id], onDelete: Cascade, map: "ForumThread_authorId_fkey")
+  forumcategory forumcategory @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "ForumThread_categoryId_fkey")
+
+  @@index([authorId], map: "ForumThread_authorId_fkey")
+  @@index([categoryId], map: "ForumThread_categoryId_fkey")
+}
+
+model product {
+  id          String   @id
+  title       String
+  description String   @db.Text
+  category    String
+  images      String   @db.Text
+  contactInfo String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  user        user     @relation(fields: [ownerId], references: [id], onDelete: Cascade, map: "Product_ownerId_fkey")
+
+  @@index([ownerId], map: "Product_ownerId_fkey")
+}
+
+model session {
+  id           String   @id
+  sessionToken String   @unique(map: "Session_sessionToken_key")
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model user {
+  id                                    String                    @id
+  name                                  String?
+  email                                 String?                   @unique(map: "User_email_key")
+  emailVerified                         DateTime?
+  password                              String?
+  image                                 String?
+  role                                  user_role                 @default(CONSUMER)
+  isVerified                            Boolean                   @default(false)
+  hasCipponMembership                   Boolean                   @default(false)
+  cipponMembershipType                  user_cipponMembershipType @default(NONE)
+  cipponId                              String?
+  companyName                           String?
+  phone                                 String?
+  location                              String?
+  bio                                   String?                   @db.Text
+  createdAt                             DateTime                  @default(now())
+  updatedAt                             DateTime
+  account                               account[]
+  agreement_agreement_initiatorIdTouser agreement[]               @relation("agreement_initiatorIdTouser")
+  agreement_agreement_receiverIdTouser  agreement[]               @relation("agreement_receiverIdTouser")
+  complaint                             complaint[]
+  democlass                             democlass[]
+  forumpost                             forumpost[]
+  forumthread                           forumthread[]
+  product                               product[]
+  session                               session[]
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique(map: "VerificationToken_token_key")
+  expires    DateTime
+
+  @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
+}
+
+enum agreement_status {
+  PROPOSED
+  ACTIVE
+  COMPLETED
+  DISPUTED
+}
+
+enum user_role {
+  PRINTER
+  MANUFACTURER
+  CONSUMER
+  ADMIN
+}
+
+enum democlass_status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum user_cipponMembershipType {
+  INDIVIDUAL
+  CORPORATE
+  NONE
+}
