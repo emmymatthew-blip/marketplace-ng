@@ -2,13 +2,14 @@ import { getServerSession } from "next-auth/next"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import prisma from "@/lib/prisma"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { notifyDemoApproved, notifyDemoRejected } from "@/lib/notifications"
 
 // Define validation schema
 const approveSchema = z.object({
   demoId: z.string(),
-  status: z.enum(["APPROVED", "REJECTED"]),
+  status: z.enum(["APPROVED", "REJECTED", "UNDER_REVIEW"]),
 })
 
 export async function POST(req: Request) {
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
         id: demoId,
       },
       data: {
-        status,
+        status: status as any,
       },
       include: {
         manufacturer: {
@@ -58,6 +59,14 @@ export async function POST(req: Request) {
         },
       },
     })
+
+    const manufacturerId = updatedDemo.manufacturerId
+    const title = updatedDemo.title
+    if (status === "APPROVED") {
+      notifyDemoApproved(manufacturerId, title, demoId).catch(() => {})
+    } else if (status === "REJECTED") {
+      notifyDemoRejected(manufacturerId, title).catch(() => {})
+    }
 
     return NextResponse.json(updatedDemo)
   } catch (error) {

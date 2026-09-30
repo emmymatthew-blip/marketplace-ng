@@ -1,0 +1,30 @@
+"use client"
+
+import Link from "next/link"
+import { MessageSquare } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { InboxSidebar } from "@/components/messaging/inbox-sidebar"
+import { DashboardEmptyState } from "@/components/dashboard"
+
+export default function MessagesPage() {
+  return (
+    <>
+      <div className="flex h-full md:hidden">
+        <InboxSidebar />
+      </div>
+      <div className="hidden h-full flex-1 flex-col items-center justify-center p-6 md:flex">
+        <DashboardEmptyState
+          icon={MessageSquare}
+          title="Select a conversation"
+          description="Choose a thread from the list, or start a conversation by contacting a company from a listing page."
+          secondaryHint="Inquiries from your listings will appear here as conversations."
+          action={
+            <Button asChild variant="outline" size="sm">
+              <Link href="/marketplace">Browse marketplace</Link>
+            </Button>
+          }
+        />
+      </div>
+    </>
+  )
+}

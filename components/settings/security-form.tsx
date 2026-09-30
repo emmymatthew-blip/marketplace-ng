@@ -59,7 +59,15 @@ export function SecurityForm({ userId }: { userId: string }) {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update password")
+        const text = await response.text()
+        let message = "Failed to update password"
+        try {
+          const data = JSON.parse(text)
+          if (data?.error) message = data.error
+        } catch {
+          if (text) message = text
+        }
+        throw new Error(message)
       }
 
       toast({
@@ -70,9 +78,10 @@ export function SecurityForm({ userId }: { userId: string }) {
       form.reset()
       router.refresh()
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update password. Please check your current password and try again."
       toast({
         title: "Error",
-        description: "Failed to update password. Please check your current password and try again.",
+        description: message,
         variant: "destructive",
       })
     } finally {

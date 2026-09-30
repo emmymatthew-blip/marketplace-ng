@@ -34,9 +34,9 @@ export default function Home() {
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
               <div className="flex flex-col justify-center space-y-6">
                 <div className="space-y-4">
-                  <h2 className="text-lg font-semibold text-yellow-400 mb-2 uppercase tracking-wide drop-shadow">Welcome to NG MARKETPLACE</h2>
+                  <h2 className="text-lg font-semibold text-yellow-400 mb-2 uppercase tracking-wide drop-shadow">Welcome to PrintMarket NG</h2>
                   <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-yellow-400 to-green-400 drop-shadow-lg">
-                    The Premier Platform for the Printing Industry
+                    Your trusted gateway to Nigeria's Printing and Graphics Communications Market
                   </h1>
                   <p className="max-w-[600px] text-white md:text-xl/relaxed mt-2 drop-shadow">
                     Connect with verified printers, manufacturers, and sellers. Discover opportunities, grow your network, and access exclusive industry resources.
@@ -49,7 +49,7 @@ export default function Home() {
                     </Link>
                   </Button>
                   <span className="text-base text-white font-semibold mt-2 sm:mt-0 sm:ml-6 drop-shadow">
-                    Call <a href="tel:+2347012345678" className="text-yellow-300 font-bold hover:underline">(234) 701-234-5678</a>
+                    Call <a href="tel:+2343006814" className="text-yellow-300 font-bold hover:underline">(234) 300-68-14</a>
                   </span>
                 </div>
               </div>
@@ -68,7 +68,7 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-blue-500 to-green-500">How It Works</h2>
               <p className="max-w-[900px] text-blue-700 md:text-xl/relaxed">
-                NG MARKETPLACE is not just another e-commerce platform. We're a specialized hub for the printing industry.
+                PrintMarket NG is your trusted gateway to Nigeria's Printing and Graphics Communications Market. We're a specialized hub for the printing industry.
               </p>
             </div>
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -192,7 +192,7 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-green-500 via-pink-500 to-blue-500">Featured Vendors</h2>
               <p className="max-w-[900px] text-green-700 md:text-xl/relaxed">
-                Discover top verified printers and manufacturers in the Nigerian printing industry.
+                Your trusted gateway to Nigeria's Printing and Graphics Communications Market. Discover top verified printers and manufacturers in the Nigerian printing industry.
               </p>
             </div>
             <div className="relative">
@@ -244,7 +244,7 @@ export default function Home() {
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8">
                   <h2 className="text-3xl font-bold tracking-tight md:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-green-500 to-pink-500">Forum Highlights</h2>
                   <p className="max-w-[900px] text-blue-700 md:text-xl/relaxed">
-                    Join the conversation in our specialized printing industry forums.
+                    Your trusted gateway to Nigeria's Printing and Graphics Communications Market. Join the conversation in our specialized printing industry forums.
                   </p>
                 </div>
                 <ForumHighlights />
@@ -259,14 +259,14 @@ export default function Home() {
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Image
                 src="/images/logo.png"
-                alt="NG MARKETPLACE Logo"
+                alt="PrintMarket NG Logo"
                 width={32}
                 height={32}
                 className="rounded shadow-md"
               />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 via-white to-green-200">NG MARKETPLACE</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 via-white to-green-200">PrintMarket NG</span>
             </Link>
-            <p className="text-sm text-white">© 2023 NG MARKETPLACE. All rights reserved.</p>
+            <p className="text-sm text-white">© 2023 PrintMarket NG. All rights reserved.</p>
           </div>
           <div className="flex gap-4">
             <Link href="/terms" className="text-sm text-white hover:text-yellow-200 transition-colors">

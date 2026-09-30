@@ -1,19 +1,17 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Upload } from "lucide-react"
+import { motion } from "framer-motion"
+import { Save, Loader2 } from "lucide-react"
+import { TEAM_SIZE_OPTIONS } from "@/lib/company-profile"
 
 interface ProfileFormProps {
   user: {
@@ -28,6 +26,8 @@ interface ProfileFormProps {
     location?: string
     companyName?: string
     bio?: string
+    yearsInBusiness?: number
+    teamSize?: string
   }
 }
 
@@ -46,20 +46,22 @@ export function ProfileForm({ user }: ProfileFormProps) {
       phone: formData.get("phone") as string,
       location: formData.get("location") as string,
       companyName: user.role === "MANUFACTURER" ? (formData.get("companyName") as string) : undefined,
-      cipponId: user.role === "PRINTER" ? (formData.get("cipponId") as string) : undefined,
+      cipponId: user.role === "END_USER_PRINTER" ? (formData.get("cipponId") as string) : undefined,
+      yearsInBusiness: formData.get("yearsInBusiness") as string,
+      teamSize: formData.get("teamSize") as string,
       bio: formData.get("bio") as string,
     }
 
     try {
-      // In a real app, this would be an API call
-      // const response = await fetch("/api/profile", {
-      //   method: "PUT",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(data),
-      // })
+      const response = await fetch("/api/users/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        throw new Error("Failed to update profile")
+      }
 
       toast({
         title: "Profile updated",
@@ -67,8 +69,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
       })
 
       router.refresh()
-    } catch (error) {
-      console.error("Error updating profile:", error)
+    } catch {
       toast({
         title: "Failed to update profile",
         description: "There was an error updating your profile. Please try again.",
@@ -80,92 +81,176 @@ export function ProfileForm({ user }: ProfileFormProps) {
   }
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit}>
-        <CardHeader>
-          <CardTitle>Profile Information</CardTitle>
-          <CardDescription>Update your profile information and settings.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarImage src={user.image || "/placeholder.svg?height=80&width=80"} alt={user.name} />
-              <AvatarFallback>
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-medium">{user.name}</h3>
-                <Badge>{user.role}</Badge>
-                {user.isVerified && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3" /> Verified
-                  </Badge>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-            </div>
-            <Button variant="outline" size="sm" type="button">
-              <Upload className="mr-2 h-4 w-4" />
-              Change Photo
-            </Button>
-          </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="bg-primary/5 border-b">
+        <h3 className="text-lg font-semibold text-primary">Edit Profile</h3>
+        <p className="text-sm text-muted-foreground">
+          Update your personal information and preferences
+        </p>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-2"
+            >
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                name="name"
+                defaultValue={user.name}
+                className="bg-background/40 backdrop-blur-sm"
+                required
+              />
+            </motion.div>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" name="name" defaultValue={user.name} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" defaultValue={user.email} disabled />
-                <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input id="phone" name="phone" defaultValue={user.phone || ""} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Select name="location" defaultValue={user.location || ""}>
-                  <SelectTrigger id="location">
-                    <SelectValue placeholder="Select your location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lagos">Lagos</SelectItem>
-                    <SelectItem value="abuja">Abuja</SelectItem>
-                    <SelectItem value="port-harcourt">Port Harcourt</SelectItem>
-                    <SelectItem value="kano">Kano</SelectItem>
-                    <SelectItem value="ibadan">Ibadan</SelectItem>
-                    <SelectItem value="enugu">Enugu</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {user.role === "MANUFACTURER" && (
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input id="companyName" name="companyName" defaultValue={user.companyName || ""} />
-                </div>
-              )}
-              {user.role === "PRINTER" && (
-                <div className="space-y-2">
-                  <Label htmlFor="cipponId">CIPPON ID</Label>
-                  <Input id="cipponId" name="cipponId" defaultValue={user.cipponId || ""} />
-                  {!user.isVerified && (
-                    <p className="text-xs text-muted-foreground">
-                      Enter your CIPPON ID to get verified. Verification may take 1-2 business days.
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="space-y-2">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-2"
+            >
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                defaultValue={user.email}
+                className="bg-muted"
+                disabled
+              />
+              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-2"
+            >
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                name="phone"
+                defaultValue={user.phone || ""}
+                className="bg-background/40 backdrop-blur-sm"
+                placeholder="+234 XXX XXX XXXX"
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-2"
+            >
+              <Label htmlFor="location">Location</Label>
+              <Select name="location" defaultValue={user.location || ""}>
+                <SelectTrigger id="location" className="bg-background/40 backdrop-blur-sm">
+                  <SelectValue placeholder="Select your location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="lagos">Lagos</SelectItem>
+                  <SelectItem value="abuja">Abuja</SelectItem>
+                  <SelectItem value="port-harcourt">Port Harcourt</SelectItem>
+                  <SelectItem value="kano">Kano</SelectItem>
+                  <SelectItem value="ibadan">Ibadan</SelectItem>
+                  <SelectItem value="enugu">Enugu</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </motion.div>
+
+            {user.role === "MANUFACTURER" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="space-y-2 md:col-span-2"
+              >
+                <Label htmlFor="companyName">Company Name</Label>
+                <Input
+                  id="companyName"
+                  name="companyName"
+                  defaultValue={user.companyName || ""}
+                  className="bg-background/40 backdrop-blur-sm"
+                  placeholder="Your company name"
+                />
+              </motion.div>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+              className="space-y-2"
+            >
+              <Label htmlFor="yearsInBusiness">Years in Business</Label>
+              <Input
+                id="yearsInBusiness"
+                name="yearsInBusiness"
+                type="number"
+                min="0"
+                defaultValue={user.yearsInBusiness != null ? String(user.yearsInBusiness) : ""}
+                className="bg-background/40 backdrop-blur-sm"
+                placeholder="e.g. 15"
+              />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="space-y-2"
+            >
+              <Label htmlFor="teamSize">Team Size</Label>
+              <select
+                id="teamSize"
+                name="teamSize"
+                defaultValue={user.teamSize || ""}
+                className="flex h-10 w-full rounded-md border border-input bg-background/40 px-3 py-2 text-sm backdrop-blur-sm"
+              >
+                <option value="">Select team size</option>
+                {TEAM_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </motion.div>
+
+            {user.role === "END_USER_PRINTER" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="space-y-2 md:col-span-2"
+              >
+                <Label htmlFor="cipponId">CIPPON ID</Label>
+                <Input
+                  id="cipponId"
+                  name="cipponId"
+                  defaultValue={user.cipponId || ""}
+                  className="bg-background/40 backdrop-blur-sm"
+                  placeholder="Enter your CIPPON ID"
+                />
+                {!user.isVerified && (
+                  <p className="text-xs text-muted-foreground">
+                    Enter your CIPPON ID to get verified. Verification may take 1-2 business days.
+                  </p>
+                )}
+              </motion.div>
+            )}
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="space-y-2 md:col-span-2"
+            >
               <Label htmlFor="bio">Bio</Label>
               <Textarea
                 id="bio"
@@ -173,19 +258,45 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 placeholder="Tell us about yourself or your business..."
                 rows={4}
                 defaultValue={user.bio || ""}
+                className="bg-background/40 backdrop-blur-sm resize-none"
               />
-            </div>
+            </motion.div>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-end gap-2">
-          <Button variant="outline" type="button" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </Button>
-        </CardFooter>
-      </form>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="flex justify-end gap-4"
+          >
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.back()}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </motion.div>
+        </form>
+      </CardContent>
     </Card>
   )
 }

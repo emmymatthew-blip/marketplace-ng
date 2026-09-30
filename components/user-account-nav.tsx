@@ -1,79 +1,117 @@
 "use client"
 
 import Link from "next/link"
-import { useSession, signOut } from "next-auth/react"
-import { Button } from "@/components/ui/button"
+import { User } from "next-auth"
+import { signOut } from "next-auth/react"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Bookmark, MessageSquare, FileText, Settings, User as UserIcon, LogOut, Package, Presentation, Building2 } from "lucide-react"
 
-export function UserAccountNav() {
-  const { data: session, status } = useSession()
-  const isAuthenticated = status === "authenticated"
-
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" asChild>
-          <Link href="/login">Login</Link>
-        </Button>
-        <Button asChild className="bg-gradient-to-r from-[#e94560] to-[#ff9017] text-white hover:from-[#e94560]/90 hover:to-[#ff9017]/90 px-6 md:px-8 py-2 md:py-3 font-semibold transition-all duration-300 text-sm md:text-lg shadow-lg hover:shadow-xl">
-          <Link href="/register">Register</Link>
-        </Button>
-      </div>
-    )
+interface UserAccountNavProps extends React.HTMLAttributes<HTMLDivElement> {
+  user: Pick<User, "name" | "image" | "email"> & {
+    id?: string
+    role?: string
+    isVerified?: boolean
   }
+}
 
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
-  }
-
+export function UserAccountNav({ user }: UserAccountNavProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={session.user.image || "/placeholder-user.jpg"} alt={session.user.name || "@user"} />
-            <AvatarFallback>
-              {session.user.name
-                ? session.user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                : "UN"}
-            </AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{session.user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard">Dashboard</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/profile">Profile</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/agreements">Agreements</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/settings">Settings</Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-4">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.image || ""} alt={user.name || ""} />
+              <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.name}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <Link href="/profile" className="w-full flex items-center">
+                <UserIcon className="mr-2 h-4 w-4" />
+                Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/messages" className="w-full flex items-center">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Messages
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/marketplace/my-products" className="w-full flex items-center">
+                <Package className="mr-2 h-4 w-4" />
+                My Listings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/demo-access/my-requests" className="w-full flex items-center">
+                <Presentation className="mr-2 h-4 w-4" />
+                My Demo Requests
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/marketplace/vendor/setup" className="w-full flex items-center">
+                <Building2 className="mr-2 h-4 w-4" />
+                Vendor Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/agreements" className="w-full flex items-center">
+                <FileText className="mr-2 h-4 w-4" />
+                Agreements
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/bookmarks" className="w-full flex items-center">
+                <Bookmark className="mr-2 h-4 w-4" />
+                Bookmarks
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/settings" className="w-full flex items-center">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="cursor-pointer flex items-center text-red-600 focus:text-red-600"
+            onSelect={(event) => {
+              event.preventDefault()
+              signOut({
+                callbackUrl: `${window.location.origin}/login`,
+              })
+            }}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }

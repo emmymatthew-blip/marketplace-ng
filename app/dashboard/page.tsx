@@ -2,225 +2,238 @@
 
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
-import { redirect } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MainNav } from "@/components/main-nav"
-import { Search } from "@/components/search"
-import { UserAccountNav } from "@/components/user-account-nav"
-import { Printer } from "lucide-react"
+import { KeyMetricsCards } from "@/components/dashboard/key-metrics-cards"
+import { RecentActivityPanel } from "@/components/dashboard/recent-activity-panel"
+import { ListingPerformanceCard } from "@/components/dashboard/listing-performance-card"
+import { UpcomingDemosCard } from "@/components/dashboard/upcoming-demos-card"
+import { VerificationStatusCard } from "@/components/dashboard/verification-status-card"
+import { ProfileStrengthCard } from "@/components/dashboard/profile-strength-card"
+import { DashboardPageContainer, DashboardHeader, DashboardSection, InsightCard } from "@/components/dashboard"
+import { WelcomeModal, hasSeenWelcomeModal } from "@/components/dashboard/welcome-modal"
 import Link from "next/link"
-import { DashboardHeader } from "@/components/dashboard/dashboard-header"
-import { ActiveAgreements } from "@/components/dashboard/active-agreements"
-import { RecentMessages } from "@/components/dashboard/recent-messages"
-import { UserProfileSummary } from "@/components/dashboard/user-profile-summary"
-import { Footer } from "@/components/footer"
-
-// Mock data - would be fetched from API in production
-const mockAgreements = [
-  {
-    id: "1",
-    title: "Digital Printing Services",
-    status: "ACTIVE" as const,
-    counterparty: {
-      name: "PrintTech Solutions",
-      role: "PRINTER",
-    },
-    service: "Digital Printing",
-    startDate: "June 15, 2023",
-    dueDate: "July 15, 2023",
-    value: "₦120,000",
-  },
-  {
-    id: "2",
-    title: "Equipment Maintenance",
-    status: "PROPOSED" as const,
-    counterparty: {
-      name: "GraphicPro Systems",
-      role: "MANUFACTURER",
-    },
-    service: "Printer Maintenance",
-    startDate: "Pending",
-    dueDate: "August 30, 2023",
-    value: "₦85,000",
-  },
-  {
-    id: "3",
-    title: "Ink Supply Contract",
-    status: "COMPLETED" as const,
-    counterparty: {
-      name: "Ink Masters Nigeria",
-      role: "MANUFACTURER",
-    },
-    service: "Ink Supply",
-    startDate: "May 10, 2023",
-    dueDate: "June 10, 2023",
-    value: "₦45,000",
-  },
-  {
-    id: "4",
-    title: "Banner Printing Project",
-    status: "DISPUTED" as const,
-    counterparty: {
-      name: "ScreenTech International",
-      role: "PRINTER",
-    },
-    service: "Banner Printing",
-    startDate: "June 1, 2023",
-    dueDate: "June 15, 2023",
-    value: "₦65,000",
-  },
-]
+import { Button } from "@/components/ui/button"
+import { Plus, Inbox, ShieldCheck } from "lucide-react"
 
 const mockMessages = [
   {
     id: "1",
-    sender: {
-      id: "sender1",
-      name: "John Doe",
-      image: "/placeholder.svg?height=32&width=32",
-    },
-    timestamp: "2 hours ago",
-    preview: "Hello, I'm interested in discussing a potential printing project for my company's upcoming event...",
+    senderName: "John Doe",
+    preview: "Interested in your digital printing services...",
+    time: "2h ago",
     isRead: false,
   },
   {
     id: "2",
-    sender: {
-      id: "sender2",
-      name: "Jane Smith",
-      image: "/placeholder.svg?height=32&width=32",
-    },
-    timestamp: "Yesterday",
-    preview: "Thank you for your proposal. I've reviewed the terms and would like to discuss a few adjustments...",
-    isRead: true,
-  },
-  {
-    id: "3",
-    sender: {
-      id: "sender3",
-      name: "Michael Johnson",
-      image: "/placeholder.svg?height=32&width=32",
-    },
-    timestamp: "3 days ago",
-    preview: "I've sent the final design files for the brochure project. Please confirm receipt and let me know...",
+    senderName: "Jane Smith",
+    preview: "Thank you for your proposal...",
+    time: "Yesterday",
     isRead: true,
   },
 ]
 
+const mockInquiries = [
+  { id: "1", from: "Acme Corp", product: "Offset Press", time: "1d ago" },
+]
+
+const mockAgreementUpdates = [
+  { id: "1", title: "Digital Printing Services", counterparty: "PrintTech", status: "Active", time: "3d ago" },
+]
+
+const mockListingPerformance = [
+  { id: "1", title: "Heidelberg Speedmaster", views: 124, inquiries: 8, trend: "up" as const },
+  { id: "2", title: "Epson SureColor S80600", views: 89, inquiries: 5, trend: "up" as const },
+]
+
+const mockUpcomingDemos = [
+  { id: "1", title: "UV Printing Workshop", date: "Dec 15, 2025", time: "2:00 PM" },
+]
+
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
-  const [stats, setStats] = useState({
-    agreements: 4,
-    messages: 3,
-    forumActivity: 8,
-    upcomingDemos: 2,
+  const { data: session } = useSession()
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+  const [metrics, setMetrics] = useState({
+    productViews: 0,
+    inquiriesReceived: 0,
+    activeAgreements: 0,
+    demoRegistrations: 0,
+    profileVisits: 0,
   })
+  const [listingPerformance, setListingPerformance] = useState<{ id: string; title: string; views: number; inquiries: number; trend?: "up" | "down" | "same" }[]>([])
+  const [agreementUpdates, setAgreementUpdates] = useState<{ id: string; title: string; counterparty: string; status: string; time: string }[]>([])
 
-  // Redirect if not authenticated
   useEffect(() => {
-    if (status === "unauthenticated") {
-      redirect("/login?callbackUrl=/dashboard")
+    const userId = (session?.user as any)?.id
+    if (!userId) return
+    if (!hasSeenWelcomeModal(userId)) setShowWelcomeModal(true)
+  }, [session?.user])
+
+  useEffect(() => {
+    const userId = (session?.user as any)?.id
+    if (!userId) return
+    let cancelled = false
+
+    Promise.all([
+      fetch(`/api/products?ownerId=${userId}&limit=50`).then((r) => (r.ok ? r.json() : { data: [] })),
+      fetch("/api/agreements").then((r) => (r.ok ? r.json() : [])),
+      fetch("/api/inquiries/stats").then((r) => (r.ok ? r.json() : null)),
+    ])
+      .then(([productsRes, agreements, inquiryStats]) => {
+        if (cancelled) return
+        const list = Array.isArray(productsRes) ? productsRes : productsRes?.data ?? []
+        const agreeList = Array.isArray(agreements) ? agreements : []
+        const activeCount = agreeList.filter((a: any) => a.status === "ACTIVE").length
+        const inquiryTotal = inquiryStats?.total ?? 0
+        setMetrics((m) => ({
+          ...m,
+          productViews: m.productViews || 0,
+          inquiriesReceived: inquiryTotal,
+          activeAgreements: activeCount,
+          demoRegistrations: m.demoRegistrations || 0,
+          profileVisits: m.profileVisits || 0,
+        }))
+        setListingPerformance(
+          list.slice(0, 5).map((p: any) => ({
+            id: p.id,
+            title: p.title ?? "Untitled",
+            views: (p as any).viewCount ?? 0,
+            inquiries: (p as any).inquiryCount ?? 0,
+            trend: "same" as const,
+          }))
+        )
+        setAgreementUpdates(
+          agreeList.slice(0, 3).map((a: any) => {
+            const other = a.initiator?.id === userId ? a.receiver : a.initiator
+            const name = other?.name ?? "Unknown"
+            const title = a.terms?.slice(0, 40)?.trim() + (a.terms?.length > 40 ? "…" : "") || `Agreement with ${name}`
+            return {
+              id: a.id,
+              title,
+              counterparty: name,
+              status: a.status,
+              time: formatTime(a.updatedAt ?? a.createdAt),
+            }
+          })
+        )
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
     }
-  }, [status])
+  }, [session?.user])
 
-  if (status === "loading") {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
+  function formatTime(dateStr: string) {
+    try {
+      const d = new Date(dateStr)
+      const now = new Date()
+      const diff = now.getTime() - d.getTime()
+      if (diff < 86400000) return "Today"
+      if (diff < 172800000) return "Yesterday"
+      const days = Math.floor(diff / 86400000)
+      return `${days}d ago`
+    } catch {
+      return "—"
+    }
   }
 
-  if (!session) {
-    return null
+  const verificationStatus = {
+    emailVerified: !!(session?.user as any)?.email,
+    businessVerified: !!(session?.user as any)?.isVerified,
+    enterpriseVerified: false,
   }
 
-  const mockUser = {
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    image: "/placeholder.svg",
-    role: "PRINTER" as const,
-    isVerified: true,
-    cipponId: "CIPPON123",
-    phone: "+234 701 234 5678",
-    location: "Lagos",
-    companyName: undefined,
-  }
+  const profileStrengthItems = [
+    { id: "logo", label: "Upload logo", done: !!(session?.user as any)?.image, href: "/profile" },
+    { id: "description", label: "Complete company description", done: !!(session?.user as any)?.bio, href: "/profile" },
+    { id: "verify", label: "Verify your business", done: !!(session?.user as any)?.businessVerified || !!(session?.user as any)?.isVerified, href: "/verification" },
+  ]
+  const profileStrength = Math.round(
+    (profileStrengthItems.filter((i) => i.done).length / profileStrengthItems.length) * 100
+  )
+
+  const insightItems: string[] = []
+  if (profileStrength < 100) insightItems.push("Complete your profile and verification to build trust with partners.")
+  if (listingPerformance.length === 0) insightItems.push("Create your first listing to start receiving inquiries.")
+  if (metrics.inquiriesReceived > 0 && agreementUpdates.length === 0) insightItems.push("Review open inquiries and turn leads into agreements.")
+  if (insightItems.length === 0) insightItems.push("You're all set. Use the management panels below to stay on top of listings and agreements.")
+
+  const userId = (session?.user as any)?.id
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f8fafc]">
-      <header className="sticky top-0 z-40 border-b bg-white shadow-md">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <MainNav />
-          <div className="flex items-center gap-4">
-            <Search />
-            <UserAccountNav />
-          </div>
+    <DashboardPageContainer className="space-y-8">
+      {userId && (
+        <WelcomeModal
+          open={showWelcomeModal}
+          onOpenChange={setShowWelcomeModal}
+          userId={userId}
+        />
+      )}
+      {!verificationStatus.businessVerified && (
+        <div className="rounded-xl border border-border bg-muted/50 px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
+          <p className="text-sm text-muted-foreground">
+            Complete verification to build trust and stand out on the platform.
+          </p>
+          <Button size="sm" variant="outline" asChild>
+            <Link href="/verification">Complete verification</Link>
+          </Button>
         </div>
-      </header>
-      <main className="flex-1">
-        <div className="container py-8">
-          <div className="flex flex-col gap-8">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#326de0] to-[#ce057d]">
-                Dashboard
-              </h1>
-              <p className="text-gray-600 text-lg">
-                Welcome back, {session.user.name}! Here's an overview of your activity on NG MARKETPLACE.
-              </p>
-            </div>
-            
-            <div className="relative">
-              <div className="relative bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-                <div className="absolute inset-0 bg-[#326de0]/5 rounded-2xl"></div>
-                <div className="relative z-10">
-                  <DashboardHeader userRole={session.user.role} stats={stats} />
-                </div>
-              </div>
-            </div>
+      )}
+      <DashboardHeader
+        title="Company Control Center"
+        description={"Welcome back, " + (session?.user?.name ?? "there") + ". Your activity and key metrics."}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" asChild>
+              <Link href="/marketplace/my-products/new">
+                <Plus className="h-4 w-4 mr-1.5" aria-hidden />
+                Create listing
+              </Link>
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/dashboard/inquiries">
+                <Inbox className="h-4 w-4 mr-1.5" aria-hidden />
+                Review inquiries
+              </Link>
+            </Button>
+            {profileStrength < 100 && (
+              <Button size="sm" variant="outline" asChild>
+                <Link href="/verification">
+                  <ShieldCheck className="h-4 w-4 mr-1.5" aria-hidden />
+                  Complete verification
+                </Link>
+              </Button>
+            )}
+          </div>
+        }
+      />
 
-            <div className="relative">
-              <div className="relative bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
-                <div className="absolute inset-0 bg-primary/5 rounded-2xl"></div>
-                <div className="relative z-10">
-                  <Tabs defaultValue="agreements" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 bg-gray-50 p-1 rounded-lg">
-                      <TabsTrigger 
-                        value="agreements"
-                        className="data-[state=active]:bg-white data-[state=active]:text-[#326de0] data-[state=active]:shadow-sm transition-all duration-300"
-                      >
-                        Agreements
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="messages"
-                        className="data-[state=active]:bg-white data-[state=active]:text-[#326de0] data-[state=active]:shadow-sm transition-all duration-300"
-                      >
-                        Messages
-                      </TabsTrigger>
-                      <TabsTrigger 
-                        value="profile"
-                        className="data-[state=active]:bg-white data-[state=active]:text-[#326de0] data-[state=active]:shadow-sm transition-all duration-300"
-                      >
-                        Profile
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="agreements" className="space-y-4 mt-6">
-                      <h2 className="text-2xl font-semibold text-[#326de0]">Active Agreements</h2>
-                      <ActiveAgreements agreements={mockAgreements} />
-                    </TabsContent>
-                    <TabsContent value="messages" className="space-y-4 mt-6">
-                      <h2 className="text-2xl font-semibold text-[#326de0]">Recent Messages</h2>
-                      <RecentMessages messages={mockMessages} />
-                    </TabsContent>
-                    <TabsContent value="profile" className="space-y-4 mt-6">
-                      <h2 className="text-2xl font-semibold text-[#326de0]">Profile Summary</h2>
-                      <UserProfileSummary user={mockUser} />
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </div>
+      <DashboardSection title="Key metrics">
+        <KeyMetricsCards metrics={metrics} />
+      </DashboardSection>
+
+      <DashboardSection title="Recent activity">
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-1 min-w-0">
+            <RecentActivityPanel
+              messages={mockMessages}
+              inquiries={mockInquiries}
+              agreementUpdates={agreementUpdates}
+            />
+          </div>
+          <div className="lg:col-span-2 min-w-0 space-y-6">
+            <ListingPerformanceCard items={listingPerformance.length > 0 ? listingPerformance : mockListingPerformance} />
+            <div className="grid gap-6 sm:grid-cols-2">
+              <UpcomingDemosCard demos={mockUpcomingDemos} />
+              <VerificationStatusCard status={verificationStatus} />
             </div>
+            <ProfileStrengthCard percentage={profileStrength} items={profileStrengthItems} />
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </DashboardSection>
+
+      <DashboardSection title="Insights">
+        <InsightCard items={insightItems} />
+      </DashboardSection>
+    </DashboardPageContainer>
   )
 }

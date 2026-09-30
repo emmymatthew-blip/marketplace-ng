@@ -70,7 +70,7 @@ export function ContactList({ contacts, selectedContactId, onSelectContact, isLo
                     )}
                   </div>
                   {contact.unreadCount && contact.unreadCount > 0 && (
-                    <div className="bg-primary text-primary-foreground text-xs rounded-full h-5 min-w-5 flex items-center justify-center px-1">
+                    <div className="bg-primary text-white text-xs rounded-full h-5 min-w-5 flex items-center justify-center px-1">
                       {contact.unreadCount}
                     </div>
                   )}

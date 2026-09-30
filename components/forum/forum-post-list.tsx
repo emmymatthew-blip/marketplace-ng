@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { VerifiedBadge } from "@/components/verified-badge"
 import { ThumbsUp, Flag, MoreHorizontal, Reply } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
@@ -56,7 +57,7 @@ export function ForumPostList({ posts, onReply, onLike, onReport, onEdit, onDele
               <div className="flex items-center gap-2">
                 <span className="font-medium">{post.author.name}</span>
                 <Badge variant="outline">{post.author.role}</Badge>
-                {post.author.isVerified && <Badge variant="secondary">Verified</Badge>}
+                <VerifiedBadge verified={post.author.isVerified} size="sm" />
               </div>
               <div className="text-sm text-muted-foreground">{post.createdAt}</div>
             </div>

@@ -1,71 +1,52 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, MessageSquare, Users, Calendar } from "lucide-react"
+import Link from "next/link"
+import { ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 
-interface DashboardHeaderProps {
-  userRole?: string
-  stats: {
-    agreements: number
-    messages: number
-    forumActivity: number
-    upcomingDemos: number
-  }
+export interface BreadcrumbItem {
+  label: string
+  href?: string
 }
 
-export function DashboardHeader({ userRole = "CONSUMER", stats }: DashboardHeaderProps) {
+export interface DashboardHeaderProps {
+  title: string
+  description?: string
+  breadcrumbs?: BreadcrumbItem[]
+  actions?: React.ReactNode
+  className?: string
+}
+
+export function DashboardHeader({
+  title,
+  description,
+  breadcrumbs,
+  actions,
+  className,
+}: DashboardHeaderProps) {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Active Agreements</CardTitle>
-          <FileText className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.agreements}</div>
-          <p className="text-xs text-muted-foreground">
-            {userRole === "PRINTER" || userRole === "MANUFACTURER"
-              ? "Manage your business agreements"
-              : "Track your service agreements"}
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Messages</CardTitle>
-          <MessageSquare className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.messages}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.messages > 0 ? `${Math.min(stats.messages, 3)} unread messages` : "No new messages"}
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Forum Activity</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.forumActivity}</div>
-          <p className="text-xs text-muted-foreground">Posts and replies this month</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Upcoming Demos</CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.upcomingDemos}</div>
-          <p className="text-xs text-muted-foreground">
-            {userRole === "MANUFACTURER"
-              ? "Classes you're hosting"
-              : stats.upcomingDemos > 0
-                ? "Registered for this week"
-                : "No upcoming demonstrations"}
-          </p>
-        </CardContent>
-      </Card>
+    <div className={cn("flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4", className)}>
+      <div className="min-w-0 flex-1">
+        {breadcrumbs && breadcrumbs.length > 0 && (
+          <nav className="mb-2 flex items-center gap-1.5 text-sm text-muted-foreground" aria-label="Breadcrumb">
+            {breadcrumbs.map((item, i) => (
+              <span key={i} className="flex items-center gap-1.5">
+                {i > 0 && <ChevronRight className="h-4 w-4 shrink-0" />}
+                {item.href ? (
+                  <Link href={item.href} className="hover:text-foreground transition-colors">
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span className="text-foreground font-medium">{item.label}</span>
+                )}
+              </span>
+            ))}
+          </nav>
+        )}
+        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        {description && (
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        )}
+      </div>
+      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
   )
 }

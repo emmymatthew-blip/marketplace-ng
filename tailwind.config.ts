@@ -21,6 +21,18 @@ const config: Config = {
     },
     extend: {
       colors: {
+        // Custom brand colors
+        'brand-primary': "#326de0",
+        'brand-secondary': "#ff9017",
+        'brand-light-gray': "#f6f6f6",
+        'brand-dark-gray': "#656565",
+        'brand-medium-gray': "#7a7a7a",
+        'brand-light-blue': "#d2e4ff",
+        'brand-yellow': "#f6bd55",
+        'brand-teal': "#57c7cc",
+        'brand-green': "#008753",
+        'brand-pink': "#ec258e",
+        // Keep the rest of your custom colors
         primary: "#326de0",
         secondary: "#ff9017",
         "light-gray": "#f6f6f6",
@@ -103,6 +115,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/typography"),
+  ],
 }
 export default config

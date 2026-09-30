@@ -1,63 +1,244 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { Paperclip, X, Send } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
+
+const INQUIRY_SUGGESTIONS = [
+  "Ask about price",
+  "Request quotation",
+  "Ask about shipping",
+  "Request specifications",
+  "Ask for demonstration",
+]
 
 interface MessageInputProps {
   receiverId: string
   senderId: string
+  productId?: string
+  productTitle?: string
+  placeholder?: string
+  showSuggestionChips?: boolean
+  prefillText?: string
+  prefillToken?: number
+  textareaId?: string
+  onMessageSent: (message: {
+    id: string
+    content: string
+    senderId: string
+    receiverId: string
+    isRead: boolean
+    createdAt: string
+    senderName: string
+    senderImage: string | null
+    productId?: string
+  }) => void
 }
 
-export function MessageInput({ receiverId, senderId }: MessageInputProps) {
+interface FileAttachment {
+  file: File
+  preview: string
+}
+
+export function MessageInput({
+  receiverId,
+  senderId,
+  productId,
+  productTitle,
+  placeholder,
+  showSuggestionChips = false,
+  prefillText,
+  prefillToken,
+  textareaId,
+  onMessageSent,
+}: MessageInputProps) {
+  const resolvedPlaceholder =
+    placeholder ??
+    (productTitle
+      ? `Message about "${productTitle}"...`
+      : "Type a message...")
+  const { data: session } = useSession()
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [attachments, setAttachments] = useState<FileAttachment[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    if (prefillText) {
+      setMessage(prefillText)
+    }
+  }, [prefillText, prefillToken])
+  
+  // Use session user ID if available, otherwise use provided senderId
+  const actualSenderId = (session?.user as any)?.id || senderId
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    const newAttachments = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }))
+    setAttachments(prev => [...prev, ...newAttachments])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => {
+      const newAttachments = [...prev]
+      URL.revokeObjectURL(newAttachments[index].preview)
+      newAttachments.splice(index, 1)
+      return newAttachments
+    })
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
 
-    if (!message.trim()) return
+    if (!message.trim() && attachments.length === 0) return
 
     setIsSubmitting(true)
 
     try {
+      // Create FormData to send message
+      const formData = new FormData()
+      formData.append("content", message)
+      formData.append("senderId", actualSenderId)
+      formData.append("receiverId", receiverId)
+      if (productId) {
+        formData.append("productId", productId)
+      }
+      
+      // Add attachments if any
+      attachments.forEach(attachment => {
+        formData.append("files", attachment.file)
+      })
+
+      // Send message to API
       const response = await fetch("/api/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: message,
-          receiverId,
-          senderId,
-        }),
+        body: formData,
       })
 
       if (!response.ok) {
-        throw new Error("Failed to send message")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to send message")
       }
 
+      const savedMessage = await response.json()
+
+      // Format message for UI
+      const messageForUI = {
+        id: savedMessage.id,
+        content: savedMessage.content,
+        senderId: savedMessage.senderId,
+        receiverId: savedMessage.receiverId,
+        isRead: savedMessage.isRead,
+        createdAt: savedMessage.createdAt,
+        senderName: savedMessage.senderName || "You",
+        senderImage: savedMessage.senderImage,
+        productId: savedMessage.productId,
+        product: savedMessage.product,
+      }
+
+      // Add message to the UI through parent component
+      onMessageSent(messageForUI)
+
+      // Show success toast
+      toast({
+        title: "Message sent",
+        description: "Your message has been sent successfully.",
+      })
+
+      // Clear form
       setMessage("")
-      router.refresh()
+      setAttachments([])
     } catch (error) {
-      console.error("Error sending message:", error)
+      toast({
+        title: "Failed to send message",
+        description: error instanceof Error ? error.message : "There was an error sending your message. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border-t">
-      <div className="flex items-end gap-2">
+    <div className="space-y-2">
+      {showSuggestionChips && (
+        <div className="flex flex-wrap gap-1.5">
+          {INQUIRY_SUGGESTIONS.map((text) => (
+            <button
+              key={text}
+              type="button"
+              onClick={() => setMessage((prev) => (prev ? `${prev}\n\n${text}` : text))}
+              className="rounded-full border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              {text}
+            </button>
+          ))}
+        </div>
+      )}
+      {attachments.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {attachments.map((attachment, index) => (
+            <div key={index} className="relative group">
+              {attachment.file.type.startsWith("image/") ? (
+                <img
+                  src={attachment.preview}
+                  alt="attachment preview"
+                  className="h-20 w-20 object-cover rounded border"
+                />
+              ) : (
+                <div className="h-20 w-20 flex items-center justify-center bg-gray-100 rounded border">
+                  <span className="text-sm text-gray-500">{attachment.file.name}</span>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => removeAttachment(index)}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="flex items-end gap-2">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileSelect}
+          className="hidden"
+          multiple
+          accept="image/*,.pdf,.doc,.docx,.txt"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-12 w-12 md:h-10 md:w-10 flex-shrink-0"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Paperclip className="h-6 w-6 md:h-5 md:w-5" />
+        </Button>
         <div className="flex-1">
           <textarea
+            id={textareaId}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            rows={1}
+            placeholder={resolvedPlaceholder}
+            aria-label="Message input"
+            className="w-full border border-input rounded-lg bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 resize-none min-h-[48px] md:min-h-[40px]"
             style={{
-              minHeight: "60px",
               maxHeight: "150px",
               height: "auto",
             }}
@@ -69,14 +250,15 @@ export function MessageInput({ receiverId, senderId }: MessageInputProps) {
             disabled={isSubmitting}
           />
         </div>
-        <button
+        <Button
           type="submit"
-          className="bg-blue-600 text-white rounded-full p-3 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-          disabled={isSubmitting || !message.trim()}
+          size="icon"
+          className="h-12 w-12 md:h-10 md:w-10 flex-shrink-0 bg-primary hover:bg-primary/90 text-white"
+          disabled={isSubmitting || (!message.trim() && attachments.length === 0)}
         >
           {isSubmitting ? (
             <svg
-              className="animate-spin h-5 w-5 text-white"
+              className="animate-spin h-6 w-6 md:h-5 md:w-5"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -89,16 +271,10 @@ export function MessageInput({ receiverId, senderId }: MessageInputProps) {
               ></path>
             </svg>
           ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <Send className="h-6 w-6 md:h-5 md:w-5" />
           )}
-        </button>
-      </div>
-    </form>
+        </Button>
+      </form>
+    </div>
   )
 }

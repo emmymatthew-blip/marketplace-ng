@@ -5,21 +5,30 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { MainNav } from "@/components/main-nav"
 import { Search } from "@/components/search"
 import { UserAccountNav } from "@/components/user-account-nav"
 import { ProductForm } from "@/components/products/product-form"
 import { ArrowLeft, Printer } from "lucide-react"
+import { isSeller } from "@/lib/user-roles"
 
-export default function NewProductPage() {
+function NewProductContent() {
   const { data: session, status } = useSession()
 
-  // Redirect if not authenticated or not a printer/manufacturer
+  // Redirect if not authenticated or not a seller
   useEffect(() => {
     if (status === "unauthenticated") {
       redirect("/login?callbackUrl=/marketplace/my-products/new")
-    } else if (status === "authenticated" && session.user.role !== "PRINTER" && session.user.role !== "MANUFACTURER") {
-      redirect("/dashboard")
+      return
+    }
+    
+    if (status === "authenticated") {
+      // Check if user is a seller by role
+      if (session?.user?.role && !isSeller(session.user.role)) {
+        redirect("/dashboard")
+        return
+      }
     }
   }, [status, session])
 
@@ -27,7 +36,7 @@ export default function NewProductPage() {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>
   }
 
-  if (!session || (session.user.role !== "PRINTER" && session.user.role !== "MANUFACTURER")) {
+  if (!session || !session.user?.role || !isSeller(session.user.role)) {
     return null
   }
 
@@ -36,10 +45,6 @@ export default function NewProductPage() {
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
           <MainNav />
-          <div className="flex items-center gap-4">
-            <Search />
-            <UserAccountNav />
-          </div>
         </div>
       </header>
       <main className="flex-1">
@@ -49,16 +54,15 @@ export default function NewProductPage() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/marketplace/my-products">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to My Products
+                  Back to My Listings
                 </Link>
               </Button>
             </div>
 
             <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">Add New Product</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Advertise a Product</h1>
               <p className="text-muted-foreground">
-                Add a new product to showcase in the marketplace. Provide detailed information to attract potential
-                customers.
+                Add a listing to promote your product or service. Provide detailed information to attract industry partners.
               </p>
             </div>
 
@@ -71,9 +75,9 @@ export default function NewProductPage() {
           <div className="flex flex-col gap-2">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Printer className="h-6 w-6" />
-              <span className="">NG MARKETPLACE</span>
+              <span className="">PrintMarket NG</span>
             </Link>
-            <p className="text-sm text-muted-foreground">© 2023 NG MARKETPLACE. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2023 PrintMarket NG. All rights reserved.</p>
           </div>
           <div className="flex gap-4">
             <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
@@ -90,4 +94,8 @@ export default function NewProductPage() {
       </footer>
     </div>
   )
+}
+
+export default function NewProductPage() {
+  return <NewProductContent />
 }

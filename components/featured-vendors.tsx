@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { CheckCircle, MapPin, Star, ChevronLeft, ChevronRight } from "lucide-react"
+import { CheckCircle, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
@@ -145,20 +145,11 @@ export function FeaturedVendors() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 md:mt-4 flex items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3 w-3 md:h-4 md:w-4 fill-primary text-primary" />
-                      <span className="text-xs md:text-sm font-medium">{vendor.rating}</span>
-                    </div>
-                    <span className="text-xs md:text-sm text-muted-foreground">
-                      ({vendor.reviews} reviews)
-                    </span>
-                  </div>
                   <p className="mt-2 md:mt-4 text-xs md:text-sm text-muted-foreground line-clamp-2">{vendor.description}</p>
                 </CardContent>
                 <CardFooter className="p-2 md:p-6 pt-0">
                   <Button asChild className="w-full bg-white text-primary hover:bg-gray-100 border border-primary/20 text-xs md:text-sm">
-                    <Link href={`/vendor/${vendor.id}`}>View Profile</Link>
+                    <Link href={`/marketplace/vendor/${vendor.id}`}>View Profile</Link>
                   </Button>
                 </CardFooter>
               </Card>

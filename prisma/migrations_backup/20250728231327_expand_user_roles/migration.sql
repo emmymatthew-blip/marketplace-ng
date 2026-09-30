@@ -1,0 +1,236 @@
+-- CreateTable
+CREATE TABLE `Account` (
+    `id` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `provider` VARCHAR(191) NOT NULL,
+    `providerAccountId` VARCHAR(191) NOT NULL,
+    `refresh_token` TEXT NULL,
+    `access_token` TEXT NULL,
+    `expires_at` INTEGER NULL,
+    `token_type` VARCHAR(191) NULL,
+    `scope` VARCHAR(191) NULL,
+    `id_token` TEXT NULL,
+    `session_state` VARCHAR(191) NULL,
+
+    UNIQUE INDEX `Account_provider_providerAccountId_key`(`provider`, `providerAccountId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Session` (
+    `id` VARCHAR(191) NOT NULL,
+    `sessionToken` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `expires` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Session_sessionToken_key`(`sessionToken`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `VerificationToken` (
+    `identifier` VARCHAR(191) NOT NULL,
+    `token` VARCHAR(191) NOT NULL,
+    `expires` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `VerificationToken_token_key`(`token`),
+    UNIQUE INDEX `VerificationToken_identifier_token_key`(`identifier`, `token`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `User` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NULL,
+    `email` VARCHAR(191) NULL,
+    `emailVerified` DATETIME(3) NULL,
+    `password` VARCHAR(191) NULL,
+    `image` VARCHAR(191) NULL,
+    `role` ENUM('EQUIPMENT_MANUFACTURER', 'CONSUMABLES_MANUFACTURER', 'INK_MANUFACTURER', 'PAPER_MANUFACTURER', 'SUBSTRATE_MANUFACTURER', 'MACHINE_PARTS_MANUFACTURER', 'COMMERCIAL_PRINTER', 'DIGITAL_PRINTER', 'SCREEN_PRINTER', 'FLEXO_PRINTER', 'OFFSET_PRINTER', 'UV_PRINTER', 'LARGE_FORMAT_PRINTER', 'TEXTILE_PRINTER', 'PACKAGING_PRINTER', 'LABEL_PRINTER', 'SIGN_PRINTER', 'BANNER_PRINTER', 'PREPRESS_SERVICE', 'POSTPRESS_SERVICE', 'FINISHING_SERVICE', 'EMBROIDERY_SERVICE', 'EMBOSSING_SERVICE', 'FOIL_STAMPING_SERVICE', 'DIE_CUTTING_SERVICE', 'LAMINATION_SERVICE', 'GRAPHIC_DESIGNER', 'ART_DIRECTOR', 'CREATIVE_AGENCY', 'BRAND_AGENCY', 'MARKETING_AGENCY', 'ADVERTISING_AGENCY', 'CORPORATE_BUYER', 'GOVERNMENT_BUYER', 'EDUCATIONAL_BUYER', 'HEALTHCARE_BUYER', 'RETAIL_BUYER', 'EVENT_PLANNER', 'WEDDING_PLANNER', 'RESTAURANT_OWNER', 'HOTEL_MANAGER', 'REAL_ESTATE_AGENT', 'PRINT_BROKER', 'PRINT_DEALER', 'EQUIPMENT_DEALER', 'CONSUMABLES_DEALER', 'SOFTWARE_DEALER', 'DISTRIBUTOR', 'WHOLESALER', 'RESELLER', 'SOFTWARE_DEVELOPER', 'RIP_SOFTWARE_PROVIDER', 'WORKFLOW_SOFTWARE_PROVIDER', 'MIS_SOFTWARE_PROVIDER', 'COLOR_MANAGEMENT_PROVIDER', 'WEB_TO_PRINT_PROVIDER', 'ECOMMERCE_PLATFORM', 'PRINT_CONSULTANT', 'COLOR_CONSULTANT', 'WORKFLOW_CONSULTANT', 'EQUIPMENT_CONSULTANT', 'TECHNICAL_SUPPORT', 'TRAINING_PROVIDER', 'INSTALLATION_SERVICE', 'PUBLISHER', 'MAGAZINE_PUBLISHER', 'NEWSPAPER_PUBLISHER', 'BOOK_PUBLISHER', 'CATALOG_PUBLISHER', 'DIRECTORY_PUBLISHER', 'PROMOTIONAL_PRODUCTS_SUPPLIER', 'APPAREL_SUPPLIER', 'MERCHANDISE_SUPPLIER', 'GIFT_SUPPLIER', 'AWARD_SUPPLIER', 'PRINTING_SCHOOL', 'TRAINING_CENTER', 'EDUCATIONAL_INSTITUTION', 'CERTIFICATION_PROVIDER', 'TRADE_ASSOCIATION', 'PROFESSIONAL_ORGANIZATION', 'STANDARDS_BODY', 'CERTIFICATION_BODY', 'END_USER_PRINTER', 'HOBBY_PRINTER', 'STUDENT_PRINTER', 'SMALL_BUSINESS_OWNER', 'ADMIN') NOT NULL DEFAULT 'END_USER_PRINTER',
+    `isVerified` BOOLEAN NOT NULL DEFAULT false,
+    `hasCipponMembership` BOOLEAN NOT NULL DEFAULT false,
+    `cipponMembershipType` ENUM('INDIVIDUAL', 'CORPORATE', 'NONE') NOT NULL DEFAULT 'NONE',
+    `cipponMembershipNumber` VARCHAR(191) NULL,
+    `cipponLicenseNumber` VARCHAR(191) NULL,
+    `companyName` VARCHAR(191) NULL,
+    `phone` VARCHAR(191) NULL,
+    `location` VARCHAR(191) NULL,
+    `bio` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `User_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Product` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` TEXT NOT NULL,
+    `category` VARCHAR(191) NOT NULL,
+    `images` TEXT NOT NULL,
+    `contactInfo` VARCHAR(191) NULL,
+    `ownerId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Agreement` (
+    `id` VARCHAR(191) NOT NULL,
+    `initiatorId` VARCHAR(191) NOT NULL,
+    `receiverId` VARCHAR(191) NOT NULL,
+    `status` ENUM('PROPOSED', 'ACTIVE', 'COMPLETED', 'DISPUTED') NOT NULL DEFAULT 'PROPOSED',
+    `terms` TEXT NOT NULL,
+    `notes` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ForumCategory` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ForumThread` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `content` TEXT NOT NULL,
+    `authorId` VARCHAR(191) NOT NULL,
+    `categoryId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `likes` INTEGER NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ForumPost` (
+    `id` VARCHAR(191) NOT NULL,
+    `content` TEXT NOT NULL,
+    `authorId` VARCHAR(191) NOT NULL,
+    `threadId` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `likes` INTEGER NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `DemoClass` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` TEXT NOT NULL,
+    `videoUrl` VARCHAR(191) NULL,
+    `schedule` DATETIME(3) NOT NULL,
+    `price` DOUBLE NOT NULL,
+    `isPaid` BOOLEAN NOT NULL DEFAULT true,
+    `status` ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+    `manufacturerId` VARCHAR(191) NOT NULL,
+    `category` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Complaint` (
+    `id` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` TEXT NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'OPEN',
+    `userId` VARCHAR(191) NOT NULL,
+    `agreementId` VARCHAR(191) NULL,
+    `evidence` TEXT NULL,
+    `resolution` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subscription_plans` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `tier` VARCHAR(191) NOT NULL,
+    `price` DOUBLE NOT NULL,
+    `interval` VARCHAR(191) NOT NULL,
+    `features` TEXT NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `user_subscriptions` (
+    `id` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `planId` VARCHAR(191) NOT NULL,
+    `startDate` DATETIME(3) NOT NULL,
+    `endDate` DATETIME(3) NOT NULL,
+    `status` VARCHAR(191) NOT NULL,
+    `autoRenew` BOOLEAN NOT NULL DEFAULT true,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Account` ADD CONSTRAINT `Account_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Session` ADD CONSTRAINT `Session_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Product` ADD CONSTRAINT `Product_ownerId_fkey` FOREIGN KEY (`ownerId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Agreement` ADD CONSTRAINT `Agreement_initiatorId_fkey` FOREIGN KEY (`initiatorId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Agreement` ADD CONSTRAINT `Agreement_receiverId_fkey` FOREIGN KEY (`receiverId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ForumThread` ADD CONSTRAINT `ForumThread_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ForumThread` ADD CONSTRAINT `ForumThread_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `ForumCategory`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ForumPost` ADD CONSTRAINT `ForumPost_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ForumPost` ADD CONSTRAINT `ForumPost_threadId_fkey` FOREIGN KEY (`threadId`) REFERENCES `ForumThread`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DemoClass` ADD CONSTRAINT `DemoClass_manufacturerId_fkey` FOREIGN KEY (`manufacturerId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Complaint` ADD CONSTRAINT `Complaint_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Complaint` ADD CONSTRAINT `Complaint_agreementId_fkey` FOREIGN KEY (`agreementId`) REFERENCES `Agreement`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_subscriptions` ADD CONSTRAINT `user_subscriptions_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_subscriptions` ADD CONSTRAINT `user_subscriptions_planId_fkey` FOREIGN KEY (`planId`) REFERENCES `subscription_plans`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

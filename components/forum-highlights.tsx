@@ -87,7 +87,7 @@ export function ForumHighlights() {
               </div>
             </div>
             <Button asChild variant="ghost" size="sm" className="group-hover:text-primary">
-              <Link href={`/forum/post/${post.id}`} className="flex items-center gap-2">
+              <Link href={`/forum/thread/${post.id}`} className="flex items-center gap-2">
                 View Thread
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>

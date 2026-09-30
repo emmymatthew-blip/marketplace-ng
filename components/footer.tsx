@@ -12,12 +12,12 @@ export function Footer() {
                 <Link href="/" className="hidden items-center space-x-2 md:flex">
                   <Image
                     src="/images/Nig-Print-Logo.png"
-                    alt="NG Marketplace Logo"
+                    alt="PrintMarket NG Logo"
                     width={40}
                     height={40}
                     className="h-10 w-auto"
                   />
-                  <span className="hidden font-bold text-sm sm:inline-block text-white">NG MARKETPLACE</span>
+                  <span className="hidden font-bold text-sm sm:inline-block text-white">PrintMarket NG</span>
                 </Link>
               </li>
               <li><Link href="/terms" className="text-white text-sm hover:underline">Terms & Conditions</Link></li>
@@ -29,7 +29,7 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold mb-4 text-lg tracking-wide">SUPPORT</h3>
             <ul className="space-y-2">
-              <li><a href="mailto:support@ngmarketplace.com" className="text-white text-sm hover:underline">support@ngmarketplace.com</a></li>
+              <li><a href="mailto:support@printmarketng.com" className="text-white text-sm hover:underline">support@printmarketng.com</a></li>
               <li><Link href="/contact" className="text-white text-sm hover:underline">Contact Us</Link></li>
               <li><Link href="/faq" className="text-white text-sm hover:underline">FAQs</Link></li>
             </ul>

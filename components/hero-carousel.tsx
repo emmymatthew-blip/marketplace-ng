@@ -7,19 +7,19 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 const carouselImages = [
   {
     src: "/images/IMG_9890 1 (2).png",
-    alt: "NG MARKETPLACE Hero 1",
+          alt: "PrintMarket NG Hero 1",
   },
   {
     src: "/images/8921fe63ae.jpg",
-    alt: "NG MARKETPLACE Hero 2",
+          alt: "PrintMarket NG Hero 2",
   },
   {
     src: "/images/b7a4dab131.jpg",
-    alt: "NG MARKETPLACE Hero 3",
+          alt: "PrintMarket NG Hero 3",
   },
   {
     src: "/images/797867fbc3.jpg",
-    alt: "NG MARKETPLACE Hero 4",
+          alt: "PrintMarket NG Hero 4",
   },
 ]
 

@@ -1,126 +1,102 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { Prisma, user_role, user_cipponMembershipType } from "@prisma/client"
+import { UserRole } from "@prisma/client"
 import { randomUUID } from "crypto"
-
-type UserCreateInput = Prisma.userCreateInput & {
-  cipponMembershipNumber?: string | null
-  cipponLicenseNumber?: string | null
-}
+import { query } from "@/lib/db"
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    console.log("Registration request body:", body)
-
-    const { 
-      name, 
-      email, 
-      password, 
-      phone, 
-      location, 
-      category, 
-      role, 
-      companyName, 
-      hasCipponMembership, 
-      cipponMembershipType,
-      cipponMembershipNumber,
-      cipponLicenseNumber 
-    } = body
-
-    // Validate required fields
-    if (!name || !email || !password || !phone || !location || !category || !role) {
-      console.log("Missing required fields:", { name, email, phone, location, category, role })
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      )
-    }
-
-    // Validate CIPPON membership fields for printers
-    if (role === "PRINTER" && hasCipponMembership) {
-      if (!cipponMembershipType || cipponMembershipType === "NONE") {
-        console.log("Invalid CIPPON membership type:", cipponMembershipType)
-        return NextResponse.json(
-          { error: "Please select a CIPPON membership type" },
-          { status: 400 }
-        )
-      }
-      if (cipponMembershipType === "INDIVIDUAL" && !cipponMembershipNumber) {
-        console.log("Missing CIPPON membership number")
-        return NextResponse.json(
-          { error: "Please enter your CIPPON membership number" },
-          { status: 400 }
-        )
-      }
-      if (cipponMembershipType === "CORPORATE" && !cipponLicenseNumber) {
-        console.log("Missing CIPPON license number")
-        return NextResponse.json(
-          { error: "Please enter your company's CIPPON license number" },
-          { status: 400 }
-        )
-      }
-    }
-
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    })
-
-    if (existingUser) {
-      console.log("User already exists:", email)
-      return NextResponse.json(
-        { error: "User already exists" },
-        { status: 400 }
-      )
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Create user using Prisma's type-safe approach
-    const userData: UserCreateInput = {
-      id: randomUUID(),
+    const {
       name,
       email,
-      password: hashedPassword,
+      password,
+      country,
+      role,
+      companyName,
       phone,
       location,
-      role: role as user_role,
-      companyName: role === "MANUFACTURER" ? companyName : null,
-      hasCipponMembership: role === "PRINTER" ? hasCipponMembership : false,
-      cipponMembershipType: role === "PRINTER" ? (cipponMembershipType as user_cipponMembershipType) : "NONE",
-      cipponMembershipNumber: role === "PRINTER" && hasCipponMembership && cipponMembershipType === "INDIVIDUAL" ? cipponMembershipNumber : null,
-      cipponLicenseNumber: role === "PRINTER" && hasCipponMembership && cipponMembershipType === "CORPORATE" ? cipponLicenseNumber : null,
-      isVerified: false,
-      updatedAt: new Date(),
-    }
+      cityState,
+      jobTitle,
+      companyWebsite,
+      firstName,
+      lastName,
+      hasCipponMembership,
+      cipponMembershipType,
+      cipponMembershipNumber,
+      cipponLicenseNumber,
+    } = body
 
-    console.log("Creating user with data:", userData)
-
-    const user = await prisma.user.create({
-      data: userData,
-    })
-
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user
-
-    return NextResponse.json({
-      user: userWithoutPassword,
-      message: "User registered successfully",
-    })
-  } catch (error) {
-    console.error("Registration error details:", error)
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (!name || !email || !password || !country || !role) {
       return NextResponse.json(
-        { error: "Database error occurred" },
-        { status: 500 }
+        { error: "Name, email, password, country, and role are required." },
+        { status: 400 }
       )
     }
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Error registering user" },
-      { status: 500 }
+
+    const trimmedEmail = String(email).trim()
+    const existingUser = await query<{ id: string }>(
+      'SELECT id FROM "User" WHERE email = ? LIMIT 1',
+      [trimmedEmail]
     )
+    if (existingUser.length > 0) {
+      return NextResponse.json(
+        { error: "A user with this email already exists." },
+        { status: 400 }
+      )
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const trimmedName = String(name).trim()
+
+    const safeRole = role as UserRole
+    const userId = randomUUID()
+    await query(
+      `INSERT INTO "User" (
+        id, name, email, password, phone, location, country, "cityState", role, "companyName",
+        "jobTitle", "companyWebsite", "firstName", "lastName", "hasCipponMembership",
+        "cipponMembershipType", "cipponMembershipNumber", "cipponLicenseNumber",
+        "isVerified", "verificationLevel", "identityVerified", "businessVerified", "enterpriseVerified",
+        "createdAt", "updatedAt"
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        userId,
+        trimmedName,
+        trimmedEmail,
+        hashedPassword,
+        phone ?? null,
+        location ?? country ?? null,
+        country ?? null,
+        cityState ?? null,
+        safeRole ?? "END_USER_PRINTER",
+        companyName?.trim() || null,
+        jobTitle ?? null,
+        companyWebsite ?? null,
+        firstName ?? null,
+        lastName ?? null,
+        hasCipponMembership ?? false,
+        cipponMembershipType ?? "NONE",
+        cipponMembershipNumber ?? null,
+        cipponLicenseNumber ?? null,
+        false,
+        0,
+        false,
+        false,
+        false,
+      ]
+    )
+
+    return NextResponse.json({
+      user: {
+        id: userId,
+        name: trimmedName,
+        email: trimmedEmail,
+        role: safeRole ?? "END_USER_PRINTER",
+      },
+      message: "User registered successfully.",
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Registration failed."
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

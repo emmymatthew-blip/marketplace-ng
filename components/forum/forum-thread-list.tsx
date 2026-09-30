@@ -47,37 +47,38 @@ export function ForumThreadList({ threads, emptyMessage = "No threads found." }:
   return (
     <div className="flex flex-col gap-4">
       {threads.map((thread) => (
-        <Card key={thread.id}>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between">
-              <Link href={`/forum/thread/${thread.id}`}>
-                <CardTitle className="text-lg hover:text-primary">{thread.title}</CardTitle>
-              </Link>
-              <Badge>{thread.category.name}</Badge>
-            </div>
-            <CardDescription className="flex items-center">
-              <Avatar className="h-5 w-5 mr-1">
-                <AvatarImage src={thread.author.image || "/placeholder.svg"} alt={thread.author.name} />
-                <AvatarFallback>{thread.author.name.substring(0, 2)}</AvatarFallback>
-              </Avatar>
-              {thread.author.name} • {thread.createdAt}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{thread.excerpt}</p>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <div className="flex items-center text-sm text-muted-foreground">
-              <MessageSquare className="mr-1 h-4 w-4" />
-              {thread.replies} replies
-              <ThumbsUp className="ml-3 mr-1 h-4 w-4" />
-              {thread.likes} likes
-            </div>
-            <Button asChild variant="ghost" size="sm">
-              <Link href={`/forum/thread/${thread.id}`}>View Thread</Link>
-            </Button>
-          </CardFooter>
-        </Card>
+        <Link 
+          href={`/forum/thread/${thread.id}`} 
+          key={thread.id}
+          className="block transition-all duration-200 hover:scale-[1.01] hover:shadow-lg"
+        >
+          <Card className="cursor-pointer">
+            <CardHeader className="pb-2">
+              <div className="flex justify-between">
+                <CardTitle className="text-lg group-hover:text-primary">{thread.title}</CardTitle>
+                <Badge>{thread.category.name}</Badge>
+              </div>
+              <CardDescription className="flex items-center">
+                <Avatar className="h-5 w-5 mr-1">
+                  <AvatarImage src={thread.author.image || "/placeholder.svg"} alt={thread.author.name} />
+                  <AvatarFallback>{thread.author.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                {thread.author.name} • {thread.createdAt}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">{thread.excerpt}</p>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <div className="flex items-center text-sm text-muted-foreground">
+                <MessageSquare className="mr-1 h-4 w-4" />
+                {thread.replies} replies
+                <ThumbsUp className="ml-3 mr-1 h-4 w-4" />
+                {thread.likes} likes
+              </div>
+            </CardFooter>
+          </Card>
+        </Link>
       ))}
     </div>
   )

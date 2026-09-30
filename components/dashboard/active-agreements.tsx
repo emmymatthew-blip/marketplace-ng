@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Inbox, MessageSquare } from "lucide-react"
 
 interface Agreement {
   id: string
@@ -26,10 +27,23 @@ export function ActiveAgreements({ agreements }: ActiveAgreementsProps) {
     return (
       <Card>
         <CardContent className="pt-6 text-center">
-          <p className="text-muted-foreground">You don't have any active agreements yet.</p>
-          <Button asChild className="mt-4">
-            <Link href="/agreements/new">Create Agreement</Link>
-          </Button>
+          <p className="text-muted-foreground">
+            You do not have any active agreements yet. Agreements usually begin after a conversation or inquiry.
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <Button asChild variant="outline">
+              <Link href="/messages">
+                <MessageSquare className="mr-1.5 h-4 w-4" />
+                Go to Messages
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/dashboard/inquiries">
+                <Inbox className="mr-1.5 h-4 w-4" />
+                View Inquiries
+              </Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     )

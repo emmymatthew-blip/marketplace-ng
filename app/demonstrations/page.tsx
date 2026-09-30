@@ -1,287 +1,286 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { MainNav } from "@/components/main-nav"
-import { Search } from "@/components/search"
-import { UserAccountNav } from "@/components/user-account-nav"
-import { DemoCard } from "@/components/demonstrations/demo-card"
-import { DemoFilter } from "@/components/demonstrations/demo-filter"
-import { Printer, Plus } from "lucide-react"
 import { useSession } from "next-auth/react"
-import { Footer } from "@/components/footer"
+import { AlertCircle, CalendarClock, Info, Sparkles, Video } from "lucide-react"
 
-// Mock data - would be fetched from API in production
-const mockDemos = [
-  {
-    id: "demo1",
-    title: "Advanced Screen Printing Techniques",
-    description:
-      "Learn advanced screen printing techniques from industry experts. This workshop will cover multi-color printing, halftones, and special effects.",
-    manufacturer: {
-      id: "manu1",
-      name: "ScreenTech International",
-      image: "/images/797867fbc3.jpg",
-      isVerified: true,
-    },
-    date: "June 15, 2023",
-    time: "10:00 AM - 12:00 PM",
-    location: "Lagos, Nigeria",
-    category: "Screen Printing",
-    price: "₦5,000",
-    isPaid: true,
-    attendees: 12,
-    maxAttendees: 20,
-    isRegistered: false,
-    image: "/images/797867fbc3.jpg"
-  },
-  {
-    id: "demo2",
-    title: "Digital Press Maintenance Workshop",
-    description:
-      "A comprehensive workshop on maintaining digital printing equipment. Learn how to troubleshoot common issues and perform routine maintenance to extend the life of your equipment.",
-    manufacturer: {
-      id: "manu2",
-      name: "Canon Nigeria",
-      image: "/images/Canon-pixma-2 1.png",
-      isVerified: true,
-    },
-    date: "June 18, 2023",
-    time: "2:00 PM - 4:00 PM",
-    location: "Abuja, Nigeria",
-    category: "Press Equipment",
-    price: "₦7,500",
-    isPaid: true,
-    attendees: 8,
-    maxAttendees: 15,
-    isRegistered: true,
-    image: "/images/Canon-pixma-2 1.png"
-  },
-  {
-    id: "demo3",
-    title: "Eco-Friendly Ink Solutions",
-    description:
-      "Discover the latest eco-friendly ink solutions for various printing applications. This demonstration will showcase sustainable options that don't compromise on quality.",
-    manufacturer: {
-      id: "manu3",
-      name: "Green Print Nigeria",
-      image: "/images/8921fe63ae.jpg",
-      isVerified: true,
-    },
-    date: "June 22, 2023",
-    time: "11:00 AM - 1:00 PM",
-    location: "Port Harcourt, Nigeria",
-    category: "Consumables",
-    price: "Free",
-    isPaid: false,
-    attendees: 25,
-    maxAttendees: 50,
-    isRegistered: false,
-    image: "/images/8921fe63ae.jpg"
-  },
-  {
-    id: "demo4",
-    title: "Introduction to UV Printing",
-    description:
-      "An introductory session on UV printing technology. Learn about the benefits, applications, and basic operation of UV printers.",
-    manufacturer: {
-      id: "manu4",
-      name: "UV Solutions Ltd",
-      image: "/images/image 87.png",
-      isVerified: true,
-    },
-    date: "June 25, 2023",
-    time: "1:00 PM - 3:00 PM",
-    location: "Enugu, Nigeria",
-    category: "UV",
-    price: "₦3,000",
-    isPaid: true,
-    attendees: 15,
-    maxAttendees: 30,
-    isRegistered: false,
-    image: "/images/image 87.png"
-  },
-  {
-    id: "demo5",
-    title: "Textile Printing Masterclass",
-    description:
-      "A comprehensive masterclass on textile printing techniques. This session will cover direct-to-garment, screen printing, and heat transfer methods for textiles.",
-    manufacturer: {
-      id: "manu5",
-      name: "Textile Print Nigeria",
-      image: "/images/149876-1 1.png",
-      isVerified: true,
-    },
-    date: "June 28, 2023",
-    time: "10:00 AM - 3:00 PM",
-    location: "Ibadan, Nigeria",
-    category: "Textile",
-    price: "₦10,000",
-    isPaid: true,
-    attendees: 10,
-    maxAttendees: 20,
-    isRegistered: false,
-    image: "/images/149876-1 1.png"
-  },
-  {
-    id: "demo6",
-    title: "Graphic Design for Print",
-    description:
-      "Learn essential graphic design principles for print production. This workshop will cover color management, file preparation, and common pitfalls to avoid.",
-    manufacturer: {
-      id: "manu6",
-      name: "GraphicPro Systems",
-      image: "/images/b7a4dab131.jpg",
-      isVerified: true,
-    },
-    date: "July 2, 2023",
-    time: "9:00 AM - 12:00 PM",
-    location: "Virtual (Online)",
-    category: "Software",
-    price: "Free",
-    isPaid: false,
-    attendees: 45,
-    maxAttendees: 100,
-    isRegistered: false,
-    image: "/images/b7a4dab131.jpg"
-  },
-]
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { DemoCard } from "@/components/demonstrations/demo-card"
+import {
+  DemoFilter,
+  DEMO_FILTER_DEFAULT,
+  type DemoFilterValues,
+} from "@/components/demonstrations/demo-filter"
+import { DemonstrationDiscoveryToolbar, type SortBy } from "@/components/demonstrations/demonstration-discovery-toolbar"
+import { FeaturedLiveDemo } from "@/components/featured-live-demo"
+import {
+  DashboardPageContainer,
+  DashboardHeader,
+  DashboardEmptyState,
+} from "@/components/dashboard"
+import { loginWithCallback } from "@/lib/auth-urls"
+import { WEEKLY_DEMO_APPLICATION_HREF } from "@/lib/demo-routes"
+import { mapApiDemoToHubDemo, type HubDemo } from "@/lib/normalizers/demo"
+import { Skeleton } from "@/components/ui/skeleton"
 
-const categories = ["Screen Printing", "Press Equipment", "Consumables", "UV", "Textile", "Software"]
+const categories = ["Finishing", "Software", "Press Equipment", "Consumables", "UV", "Textile"]
 
-export default function DemonstrationsPage() {
-  const { data: session } = useSession()
-  const [filteredDemos, setFilteredDemos] = useState(mockDemos)
+function applyDiscoveryFilters(demos: HubDemo[], filters: DemoFilterValues, sortBy: SortBy): HubDemo[] {
+  let result = demos.filter((demo) => {
+    if (
+      filters.search &&
+      !demo.title.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !demo.description.toLowerCase().includes(filters.search.toLowerCase())
+    ) {
+      return false
+    }
 
-  const handleFilterChange = (filters: {
-    search: string
-    category: string
-    date: Date | undefined
-    showFreeOnly: boolean
-  }) => {
-    const filtered = mockDemos.filter((demo) => {
-      // Filter by search term
-      if (
-        filters.search &&
-        !demo.title.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !demo.description.toLowerCase().includes(filters.search.toLowerCase())
-      ) {
-        return false
-      }
+    if (filters.category !== "all" && demo.category.toLowerCase() !== filters.category) {
+      return false
+    }
 
-      // Filter by category
-      if (filters.category !== "all" && demo.category.toLowerCase() !== filters.category) {
-        return false
-      }
+    if (filters.verifiedOnly && !demo.manufacturer.isVerified) {
+      return false
+    }
 
-      // Filter by date
-      if (filters.date) {
-        const demoDate = new Date(demo.date)
-        const filterDate = filters.date
-        if (
-          demoDate.getDate() !== filterDate.getDate() ||
-          demoDate.getMonth() !== filterDate.getMonth() ||
-          demoDate.getFullYear() !== filterDate.getFullYear()
-        ) {
-          return false
-        }
-      }
+    if (filters.region !== "all") {
+      const loc = (demo.location || "").toLowerCase()
+      const isLocal = loc.includes("nigeria") || loc.includes("lagos") || loc.includes("abuja")
+      if (filters.region === "local" && !isLocal) return false
+      if (filters.region === "international" && isLocal) return false
+    }
 
-      // Filter by price (free only)
-      if (filters.showFreeOnly && demo.isPaid) {
-        return false
-      }
+    return true
+  })
 
-      return true
+  const sorted = [...result]
+  if (sortBy === "featured") {
+    sorted.sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured))
+  } else if (sortBy === "newest") {
+    sorted.sort((a, b) => b.id.localeCompare(a.id))
+  } else {
+    sorted.sort((a, b) => {
+      const ta = a.scheduledAt ? new Date(a.scheduledAt).getTime() : 0
+      const tb = b.scheduledAt ? new Date(b.scheduledAt).getTime() : 0
+      return ta - tb
     })
-
-    setFilteredDemos(filtered)
   }
 
+  return sorted
+}
+
+function UpcomingPipelineSection({
+  demos,
+  session,
+  emptyTitle,
+  emptyDescription,
+}: {
+  demos: HubDemo[]
+  session: ReturnType<typeof useSession>["data"]
+  emptyTitle: string
+  emptyDescription: string
+}) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-40 border-b bg-background">
-        <div className="container flex h-16 items-center justify-between py-4">
-          <MainNav />
-          <div className="flex items-center gap-4">
-            <Search />
-            <UserAccountNav />
-          </div>
+    <div className="space-y-4">
+      <div className="flex gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-500/10">
+          <Video className="h-5 w-5 text-sky-600" />
         </div>
-      </header>
-      <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 relative overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/80">
-          <div className="absolute inset-0">
-            <Image
-              src="/images/20170816_154040-scaled-e1583853764343 2.png"
-              alt="Background Pattern"
-              fill
-              className="object-cover opacity-5"
+        <div className="min-w-0">
+          <h2 className="text-lg font-semibold tracking-tight">Upcoming weekly demonstrations</h2>
+          <p className="text-sm text-muted-foreground">
+            Approved, scheduled sessions — register interest before the live time. This week’s editorial spotlight is
+            shown above; the list below is the broader approved weekly programme (not an on-demand library).
+          </p>
+        </div>
+      </div>
+      {demos.length === 0 ? (
+        <DashboardEmptyState icon={Video} title={emptyTitle} description={emptyDescription} />
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {demos.map((demo) => (
+            <DemoCard
+              key={demo.id}
+              demo={demo}
+              isOwner={session?.user?.id === demo.manufacturer.id}
             />
-          </div>
-          <div className="container mx-auto relative z-10">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="inline-block">
-                <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl/none text-white">
-                  Demonstrations
-                </h1>
-                <div className="h-1 w-24 bg-gradient-to-r from-[#e94560] to-[#ff9017] mx-auto mt-4 rounded-full"></div>
-              </div>
-              <p className="max-w-[600px] text-white/90 md:text-xl/relaxed mt-2">
-                Learn from industry experts through our exclusive manufacturer demonstration classes and stay ahead of the latest printing innovations.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <div className="container py-8">
-          <div className="flex flex-col gap-8">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-2">
-                <h2 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#326de0] to-[#ce057d]">
-                  Upcoming Classes
-                </h2>
-                <p className="text-muted-foreground">
-                  Discover and register for hands-on learning experiences with industry leaders.
-                </p>
-              </div>
-              {session?.user.role === "MANUFACTURER" && (
-                <Button asChild className="bg-gradient-to-r from-[#326de0] to-[#ce057d] text-white hover:from-[#326de0]/90 hover:to-[#ce057d]/90">
-                  <Link href="/demonstrations/new">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Host Demonstration
-                  </Link>
-                </Button>
-              )}
-            </div>
-
-            <div className="relative bg-white rounded-2xl shadow-2xl p-2 md:p-8 border border-gray-100">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#326de0]/5 to-[#ce057d]/5 rounded-2xl"></div>
-              <div className="relative z-10">
-                <DemoFilter categories={categories} onFilterChange={handleFilterChange} />
-              </div>
-            </div>
-
-            {filteredDemos.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium">No demonstrations found</h3>
-                <p className="text-muted-foreground mt-2">
-                  Try adjusting your filters or check back later for new demonstrations.
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredDemos.map((demo) => (
-                  <DemoCard key={demo.id} demo={demo} />
-                ))}
-              </div>
-            )}
-          </div>
+          ))}
         </div>
-      </main>
-      <Footer />
+      )}
     </div>
   )
+}
+
+function ApplyToHostSection({ loggedIn }: { loggedIn: boolean }) {
+  return (
+    <Card className="overflow-hidden border-primary/25 bg-gradient-to-br from-primary/5 via-background to-muted/40">
+      <CardContent className="space-y-4 p-6 sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold tracking-tight">Apply to host a weekly demonstration</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground leading-relaxed">
+              PrintMarket NG runs a <span className="font-medium text-foreground">curated weekly programme only</span>
+              : one featured slot per week, application and approval before scheduling, then a live session window.
+              Evergreen product video stays on your listings — this path is for{" "}
+              <span className="font-medium text-foreground">scheduled weekly spotlight sessions</span>, not a recorded
+              library.
+            </p>
+            <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+              <li>Weekly featured placement is competitive — not every application is accepted.</li>
+              <li>All submissions go through approval before they appear publicly.</li>
+              <li>We prioritise verified hosts and clear commercial relevance.</li>
+            </ul>
+          </div>
+          <CalendarClock className="hidden h-12 w-12 shrink-0 text-primary/40 sm:block" aria-hidden />
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild size="lg">
+            <Link href={loggedIn ? WEEKLY_DEMO_APPLICATION_HREF : loginWithCallback(WEEKLY_DEMO_APPLICATION_HREF)}>
+              Apply to host a demonstration
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/pricing">How featured placement works</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function DemonstrationsContent() {
+  const { data: session } = useSession()
+  const [filters, setFilters] = useState<DemoFilterValues>(DEMO_FILTER_DEFAULT)
+  const [sortBy, setSortBy] = useState<SortBy>("soonest")
+  const [hubDemos, setHubDemos] = useState<HubDemo[]>([])
+  const [listLoading, setListLoading] = useState(true)
+  const [listError, setListError] = useState<string | null>(null)
+
+  const loadDemos = useCallback(async () => {
+    setListLoading(true)
+    setListError(null)
+    try {
+      const res = await fetch("/api/demos", { cache: "no-store" })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(typeof data?.error === "string" ? data.error : "Failed to load demonstrations")
+      }
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid demonstrations response")
+      }
+      setHubDemos(data.map((row: Record<string, unknown>) => mapApiDemoToHubDemo(row)))
+    } catch (e) {
+      setListError(e instanceof Error ? e.message : "Failed to load demonstrations")
+      setHubDemos([])
+    } finally {
+      setListLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadDemos()
+  }, [loadDemos])
+
+  const filteredDemos = useMemo(
+    () => applyDiscoveryFilters(hubDemos, filters, sortBy),
+    [hubDemos, filters, sortBy]
+  )
+
+  return (
+    <DashboardPageContainer className="space-y-8">
+      <DashboardHeader
+        title="Weekly demonstration programme"
+        description="One featured demonstration per week, plus upcoming approved scheduled sessions. Product video belongs on your listings."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button asChild size="sm" variant="default">
+              <Link href={session ? WEEKLY_DEMO_APPLICATION_HREF : loginWithCallback(WEEKLY_DEMO_APPLICATION_HREF)}>
+                Apply to host
+              </Link>
+            </Button>
+            {session && (
+              <Button asChild size="sm" variant="outline">
+                <Link href="/demo-access/my-requests">My demo requests</Link>
+              </Button>
+            )}
+          </div>
+        }
+      />
+
+      <Card className="border-primary/20 bg-muted/30 shadow-none">
+        <CardContent className="flex gap-3 p-4 sm:items-start">
+          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <Info className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm font-medium leading-snug">Single weekly spotlight</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <span className="font-medium text-foreground">Only one demonstration is featured per week.</span> Slots are
+              limited; hosts apply and are approved before appearing. Session timing and status for that spotlight are
+              shown on the card below — no separate “live” feed. Deeper product video stays on your product pages.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <section className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">This week’s featured demonstration</h2>
+            <p className="text-sm text-muted-foreground">
+              Our single editorial weekly spotlight — one slot, assigned by admins.
+            </p>
+          </div>
+          <Sparkles className="hidden h-5 w-5 text-amber-500 sm:block" aria-hidden />
+        </div>
+        <FeaturedLiveDemo />
+      </section>
+
+      <section id="discover" className="space-y-6">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Upcoming approved demonstrations
+          </p>
+          <DemoFilter categories={categories} value={filters} onFilterChange={setFilters} />
+          <DemonstrationDiscoveryToolbar
+            className="mt-5 border-t border-border/50 pt-4"
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+          />
+        </div>
+
+        {listError ? (
+          <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-destructive/30 bg-destructive/[0.06] px-6 py-12 text-center">
+            <AlertCircle className="h-10 w-10 text-destructive/80" />
+            <p className="text-sm font-medium text-foreground">Could not load demonstrations</p>
+            <p className="max-w-md text-sm text-muted-foreground">{listError}</p>
+            <Button type="button" variant="outline" size="sm" onClick={() => void loadDemos()}>
+              Try again
+            </Button>
+          </div>
+        ) : listLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-[420px] w-full rounded-xl" />
+            ))}
+          </div>
+        ) : (
+          <UpcomingPipelineSection
+            demos={filteredDemos}
+            session={session}
+            emptyTitle="No sessions match your filters"
+            emptyDescription="Try adjusting search, category, or region. New approved slots appear as hosts are cleared."
+          />
+        )}
+      </section>
+
+      <ApplyToHostSection loggedIn={Boolean(session)} />
+    </DashboardPageContainer>
+  )
+}
+
+export default function DemonstrationsPage() {
+  return <DemonstrationsContent />
 }

@@ -43,7 +43,7 @@ const mockPosts: ForumPost[] = [
     id: 4,
     title: "Industry Standards Update",
     author: "Sarah Williams",
-    excerpt: "Latest updates on printing industry standards and certifications...",
+            excerpt: "Your trusted gateway to Nigeria's Printing and Graphics Communications Market. Latest updates on printing industry standards and certifications...",
     replies: 5,
     timestamp: "8 hours ago"
   },
@@ -73,44 +73,44 @@ export function FloatingForum() {
   }, [isMinimized])
 
   return (
-    <div className="fixed right-4 bottom-4 z-50">
+    <div className="fixed right-4 bottom-4 md:bottom-8 z-50">
       {isOpen && (
         <div className={`relative transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <Card className="w-[350px] bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-[#ce057d]">
+          <Card className="w-[300px] md:w-[350px] bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-[#ce057d]">
             <div className="bg-gradient-to-r from-[#ce057d] to-[#ff9017] p-4 text-white">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
+                <h3 className="font-semibold text-base md:text-lg flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 md:h-5 md:w-5" />
                   Forum Highlights
                 </h3>
                 <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-white hover:bg-white/10"
+                    className="text-white hover:bg-white/10 h-8 w-8"
                     onClick={() => setIsMinimized(!isMinimized)}
                   >
                     {isMinimized ? (
-                      <ChevronUp className="h-5 w-5" />
+                      <ChevronUp className="h-4 w-4" />
                     ) : (
-                      <ChevronDown className="h-5 w-5" />
+                      <ChevronDown className="h-4 w-4" />
                     )}
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-white hover:bg-white/10"
+                    className="text-white hover:bg-white/10 h-8 w-8"
                     onClick={() => setIsOpen(false)}
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </div>
 
             {!isMinimized && (
-              <div className="p-4 transition-all duration-300 ease-in-out">
-                <div className="space-y-4">
+              <div className="p-3 md:p-4 transition-all duration-300 ease-in-out">
+                <div className="space-y-3 md:space-y-4">
                   {mockPosts.map((post, index) => (
                     <div
                       key={post.id}
@@ -120,11 +120,11 @@ export function FloatingForum() {
                           : 'opacity-0 translate-x-4 absolute'
                       }`}
                     >
-                      <div className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors cursor-pointer">
-                        <h4 className="font-semibold text-[#ce057d] mb-2">
+                      <div className="bg-gray-50 rounded-lg p-3 md:p-4 hover:bg-gray-100 transition-colors cursor-pointer">
+                        <h4 className="font-semibold text-[#ce057d] text-sm md:text-base mb-2">
                           {post.title}
                         </h4>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-xs md:text-sm text-gray-600 mb-2 line-clamp-2">
                           {post.excerpt}
                         </p>
                         <div className="flex items-center justify-between text-xs text-gray-500">
@@ -137,14 +137,14 @@ export function FloatingForum() {
                   ))}
                 </div>
 
-                <div className="mt-4 flex justify-center gap-2">
+                <div className="mt-3 md:mt-4 flex justify-center gap-2">
                   {mockPosts.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentPostIndex(index)}
-                      className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-all duration-300 ${
                         index === currentPostIndex
-                          ? "bg-[#ce057d] w-4"
+                          ? "bg-[#ce057d] w-3 md:w-4"
                           : "bg-gray-300 hover:bg-gray-400"
                       }`}
                     />
@@ -152,7 +152,7 @@ export function FloatingForum() {
                 </div>
 
                 <Button
-                  className="w-full mt-4 bg-gradient-to-r from-[#ce057d] to-[#ff9017] text-white hover:from-[#ce057d]/90 hover:to-[#ff9017]/90"
+                  className="w-full mt-3 md:mt-4 bg-gradient-to-r from-[#ce057d] to-[#ff9017] text-white hover:from-[#ce057d]/90 hover:to-[#ff9017]/90 text-xs md:text-sm py-2 h-8 md:h-9"
                   onClick={() => window.location.href = "/forum"}
                 >
                   Join the Discussion
@@ -166,10 +166,10 @@ export function FloatingForum() {
       {!isOpen && (
         <div className="relative transition-all duration-300 ease-in-out">
           <Button
-            className="bg-gradient-to-r from-[#ce057d] to-[#ff9017] text-white hover:from-[#ce057d]/90 hover:to-[#ff9017]/90 rounded-full shadow-lg"
+            className="bg-gradient-to-r from-[#ce057d] to-[#ff9017] text-white hover:from-[#ce057d]/90 hover:to-[#ff9017]/90 rounded-full shadow-lg text-xs md:text-sm h-8 md:h-9"
             onClick={() => setIsOpen(true)}
           >
-            <MessageSquare className="h-5 w-5 mr-2" />
+            <MessageSquare className="h-4 w-4 mr-2" />
             Forum
           </Button>
         </div>

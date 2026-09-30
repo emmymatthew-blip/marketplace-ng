@@ -12,17 +12,24 @@ import { CipponVerificationForm } from "@/components/profile/cippon-verification
 import { useToast } from "@/components/ui/use-toast"
 import { ArrowLeft, Printer } from "lucide-react"
 
+interface ExtendedUser {
+  id: string
+  name: string
+  email: string
+  image?: string
+  role: string
+  isVerified: boolean
+  cipponId?: string
+}
+
 export default function VerificationPage() {
   const { data: session, status } = useSession()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Redirect if not authenticated or not a printer
   useEffect(() => {
     if (status === "unauthenticated") {
       redirect("/login?callbackUrl=/profile/verification")
-    } else if (status === "authenticated" && session.user.role !== "PRINTER") {
-      redirect("/profile")
     }
   }, [status, session])
 
@@ -30,9 +37,9 @@ export default function VerificationPage() {
     return <div className="flex min-h-screen items-center justify-center">Loading...</div>
   }
 
-  if (!session || session.user.role !== "PRINTER") {
-    return null
-  }
+  if (!session?.user) return null
+
+  const user = session.user as ExtendedUser
 
   const handleSubmitVerification = async (data: { cipponId: string; verificationDocument: string }) => {
     setIsSubmitting(true)
@@ -69,36 +76,35 @@ export default function VerificationPage() {
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
           <MainNav />
-          <div className="flex items-center gap-4">
-            <Search />
-            <UserAccountNav />
-          </div>
         </div>
       </header>
       <main className="flex-1">
         <div className="container py-8">
           <div className="flex flex-col gap-8">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/profile">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Profile
                 </Link>
               </Button>
+              <Button variant="default" size="sm" asChild>
+                <Link href="/verification">Verification Center</Link>
+              </Button>
             </div>
 
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl font-bold tracking-tight">CIPPON Verification</h1>
               <p className="text-muted-foreground">
-                Verify your account as a CIPPON member to access printer-specific features.
+                Verify your account as a CIPPON member to access printer-specific features. You can also use the full Verification Center for identity and business verification.
               </p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="md:col-span-1">
                 <CipponVerificationForm
-                  isVerified={session.user.isVerified}
-                  cipponId={session.user.cipponId}
+                  isVerified={user.isVerified}
+                  cipponId={user.cipponId}
                   onSubmit={handleSubmitVerification}
                 />
               </div>
@@ -132,9 +138,9 @@ export default function VerificationPage() {
           <div className="flex flex-col gap-2">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <Printer className="h-6 w-6" />
-              <span className="">NG MARKETPLACE</span>
+              <span className="">PrintMarket NG</span>
             </Link>
-            <p className="text-sm text-muted-foreground">© 2023 NG MARKETPLACE. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2023 PrintMarket NG. All rights reserved.</p>
           </div>
           <div className="flex gap-4">
             <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">

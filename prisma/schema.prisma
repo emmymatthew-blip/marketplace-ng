@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -45,10 +45,154 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+enum UserVerificationType {
+  IDENTITY
+  BUSINESS
+  ENTERPRISE
+}
+
+enum UserVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REQUEST_INFO
+}
+
+model UserVerification {
+  id              String                 @id @default(cuid())
+  userId          String
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verificationType UserVerificationType
+  documentUrl     String?
+  documentType   String?
+  status         UserVerificationStatus  @default(PENDING)
+  submittedAt    DateTime               @default(now())
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  notes          String?                @db.Text
+  metadata       String?                @db.Text
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
 enum UserRole {
-  PRINTER
-  MANUFACTURER
-  CONSUMER
+  // Manufacturing & Equipment
+  EQUIPMENT_MANUFACTURER
+  CONSUMABLES_MANUFACTURER
+  INK_MANUFACTURER
+  PAPER_MANUFACTURER
+  SUBSTRATE_MANUFACTURER
+  MACHINE_PARTS_MANUFACTURER
+  
+  // Print Service Providers
+  COMMERCIAL_PRINTER
+  DIGITAL_PRINTER
+  SCREEN_PRINTER
+  FLEXO_PRINTER
+  OFFSET_PRINTER
+  UV_PRINTER
+  LARGE_FORMAT_PRINTER
+  TEXTILE_PRINTER
+  PACKAGING_PRINTER
+  LABEL_PRINTER
+  SIGN_PRINTER
+  BANNER_PRINTER
+  
+  // Specialized Services
+  PREPRESS_SERVICE
+  POSTPRESS_SERVICE
+  FINISHING_SERVICE
+  EMBROIDERY_SERVICE
+  EMBOSSING_SERVICE
+  FOIL_STAMPING_SERVICE
+  DIE_CUTTING_SERVICE
+  LAMINATION_SERVICE
+  
+  // Design & Creative
+  GRAPHIC_DESIGNER
+  ART_DIRECTOR
+  CREATIVE_AGENCY
+  BRAND_AGENCY
+  MARKETING_AGENCY
+  ADVERTISING_AGENCY
+  
+  // Print Buyers & Clients
+  CORPORATE_BUYER
+  GOVERNMENT_BUYER
+  EDUCATIONAL_BUYER
+  HEALTHCARE_BUYER
+  RETAIL_BUYER
+  EVENT_PLANNER
+  WEDDING_PLANNER
+  RESTAURANT_OWNER
+  HOTEL_MANAGER
+  REAL_ESTATE_AGENT
+  
+  // Distribution & Sales
+  PRINT_BROKER
+  PRINT_DEALER
+  EQUIPMENT_DEALER
+  CONSUMABLES_DEALER
+  SOFTWARE_DEALER
+  DISTRIBUTOR
+  WHOLESALER
+  RESELLER
+  
+  // Technology & Software
+  SOFTWARE_DEVELOPER
+  RIP_SOFTWARE_PROVIDER
+  WORKFLOW_SOFTWARE_PROVIDER
+  MIS_SOFTWARE_PROVIDER
+  COLOR_MANAGEMENT_PROVIDER
+  WEB_TO_PRINT_PROVIDER
+  ECOMMERCE_PLATFORM
+  
+  // Consulting & Support
+  PRINT_CONSULTANT
+  COLOR_CONSULTANT
+  WORKFLOW_CONSULTANT
+  EQUIPMENT_CONSULTANT
+  TECHNICAL_SUPPORT
+  TRAINING_PROVIDER
+  INSTALLATION_SERVICE
+  
+  // Media & Publishing
+  PUBLISHER
+  MAGAZINE_PUBLISHER
+  NEWSPAPER_PUBLISHER
+  BOOK_PUBLISHER
+  CATALOG_PUBLISHER
+  DIRECTORY_PUBLISHER
+  
+  // Promotional Products
+  PROMOTIONAL_PRODUCTS_SUPPLIER
+  APPAREL_SUPPLIER
+  MERCHANDISE_SUPPLIER
+  GIFT_SUPPLIER
+  AWARD_SUPPLIER
+  
+  // Educational & Training
+  PRINTING_SCHOOL
+  TRAINING_CENTER
+  EDUCATIONAL_INSTITUTION
+  CERTIFICATION_PROVIDER
+  
+  // Industry Organizations
+  TRADE_ASSOCIATION
+  PROFESSIONAL_ORGANIZATION
+  STANDARDS_BODY
+  CERTIFICATION_BODY
+  
+  // End Users (General)
+  END_USER_PRINTER
+  HOBBY_PRINTER
+  STUDENT_PRINTER
+  SMALL_BUSINESS_OWNER
+  
+  // Administrative
   ADMIN
 }
 
@@ -58,69 +202,275 @@ enum CipponMembershipType {
   NONE
 }
 
+enum SubscriptionTier {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
 model User {
-  id                String      @id @default(cuid())
-  name              String?
-  email             String?     @unique
-  emailVerified     DateTime?
-  password          String?
-  image             String?
-  role              UserRole    @default(CONSUMER)
-  isVerified        Boolean     @default(false)
-  hasCipponMembership Boolean   @default(false)
-  cipponMembershipType CipponMembershipType @default(NONE)
+  id                     String               @id @default(cuid())
+  name                   String?
+  email                  String?              @unique
+  emailVerified          DateTime?
+  password               String?
+  image                  String?
+  role                   UserRole             @default(END_USER_PRINTER)
+  isVerified             Boolean              @default(false)
+  verificationLevel      Int                  @default(0)
+  verificationStatus     String?
+  identityVerified       Boolean              @default(false)
+  businessVerified       Boolean              @default(false)
+  enterpriseVerified     Boolean              @default(false)
+  hasCipponMembership    Boolean              @default(false)
+  cipponMembershipType   CipponMembershipType @default(NONE)
   cipponMembershipNumber String?
-  cipponLicenseNumber String?
-  companyName       String?
-  phone             String?
-  location          String?
-  bio               String?     @db.Text
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  cipponLicenseNumber    String?
+  companyName            String?
+  jobTitle               String?
+  companyWebsite         String?
+  country                String?
+  cityState              String?
+  firstName              String?
+  lastName               String?
+  phone                  String?
+  location               String?
+  bio                    String?              @db.Text
+  videoUrl               String?              // Vendor profile video URL
+  videoDescription       String?              @db.Text // Video description (rich text HTML)
+  gallery                String?              @db.Text // JSON array of gallery image URLs
+  specialties            String?              @db.Text // JSON array of specialties
+  yearsInBusiness        Int?                // Years in business
+  teamSize               String?              // Team size (e.g., "10-50")
+  notificationPreferences String?             @db.Text // JSON: marketplaceUpdates, agreementUpdates, newMessages, forumActivity, demoAnnouncements, marketingEmails
+  certifications         String?              @db.Text // JSON array of certifications
+  linkedinUrl            String?              // LinkedIn profile URL
+  twitterUrl             String?              // Twitter/X profile URL
+  satisfactionRate      Float?               // Customer satisfaction rate (0-100)
+  /// @deprecated Use DemoAccessRequest.status — not written by new flows; may be stale.
+  demoAccessStatus      String?              @default("NOT_APPLIED")
+  /// @deprecated Use DemoAccessRequest.requestedAt
+  demoAccessRequestedAt DateTime?
+  /// @deprecated Use DemoAccessRequest.approvedAt
+  demoAccessApprovedAt  DateTime?
+  /// @deprecated Use DemoAccessRequest.title
+  demoRequestTitle      String?              @db.Text
+  /// @deprecated Use DemoAccessRequest.description
+  demoRequestDescription String?             @db.Text
+  /// @deprecated Use DemoAccessRequest.assignedDate / assignedDateId
+  assignedDemoDate      DateTime?
+  demoAccessRequests    DemoAccessRequest[]  // Multiple demo access requests
+  demoUpdateRequestsRequested DemoUpdateRequest[] @relation("DemoUpdateRequestsRequestedBy")
+  demoUpdateRequestsReviewed  DemoUpdateRequest[] @relation("DemoUpdateRequestsReviewedBy")
+  verifications        UserVerification[]
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
   
-  accounts          Account[]
-  sessions          Session[]
-  products          Product[]
-  initiatedAgreements Agreement[] @relation("initiator")
-  receivedAgreements Agreement[] @relation("receiver")
-  forumThreads      ForumThread[]
-  forumPosts        ForumPost[]
-  demoClasses       DemoClass[]
-  complaints        Complaint[]
+  accounts            Account[]
+  sessions            Session[]
+  products            Product[]
+  initiatedAgreements Agreement[]        @relation("initiator")
+  receivedAgreements  Agreement[]        @relation("receiver")
+  agreementRevisionsCreated AgreementRevision[]
+  agreementModificationRequests AgreementModificationRequest[]
+  vendorInquiries     Inquiry[]          @relation("VendorInquiries")
+  buyerInquiries      Inquiry[]          @relation("BuyerInquiries")
+  forumThreads        ForumThread[]
+  forumPosts          ForumPost[]
+  demoClasses         DemoClass[]
+  complaints          Complaint[]
+  disputeResponses    DisputeResponse[]
+  subscriptions       UserSubscription[]
+  notifications       Notification[]
+}
+
+model ProductCategory {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  slug        String            @unique
+  description String?           @db.Text
+  icon        String? // Icon name or URL
+  parentId    String? // For subcategories
+  parent      ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    ProductCategory[] @relation("CategoryHierarchy")
+  products    Product[]
+  isActive    Boolean           @default(true)
+  sortOrder   Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+enum ProductCondition {
+  NEW
+  USED
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  title       String
-  description String   @db.Text
-  category    String
-  images      String   @db.Text // Stored as JSON array of URLs
-  contactInfo String?
-  ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String            @id @default(cuid())
+  title          String
+  description    String            @db.Text
+  categoryId     String?
+  category       ProductCategory?  @relation(fields: [categoryId], references: [id])
+  images         String            @db.Text // Stored as JSON array of URLs
+  contactInfo    String?
+  condition      ProductCondition? @default(NEW)
+  brand          String?
+  location       String?           // Product location (e.g., "Lagos, Nigeria")
+  specifications String?           @db.Text // Stored as JSON object of key-value pairs
+  videoUrl       String?           // Product demonstration video URL
+  ownerId        String
+  owner          User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  inquiries      Inquiry[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 }
 
 enum AgreementStatus {
   PROPOSED
+  MODIFICATION_REQUESTED
   ACTIVE
   COMPLETED
   DISPUTED
+  RESOLVED
+  DECLINED
+  CANCELLED
 }
 
 model Agreement {
-  id          String          @id @default(cuid())
-  initiatorId String
-  initiator   User            @relation("initiator", fields: [initiatorId], references: [id])
-  receiverId  String
-  receiver    User            @relation("receiver", fields: [receiverId], references: [id])
-  status      AgreementStatus @default(PROPOSED)
-  terms       String          @db.Text
-  notes       String?         @db.Text
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  complaints  Complaint[]
+  id               String          @id @default(cuid())
+  initiatorId      String
+  initiator        User            @relation("initiator", fields: [initiatorId], references: [id])
+  receiverId       String
+  receiver         User            @relation("receiver", fields: [receiverId], references: [id])
+  status           AgreementStatus @default(PROPOSED)
+  terms            String          @db.Text
+  notes            String?         @db.Text
+  title            String?
+  productId        String?
+  inquiryId        String?
+  messageContactId String?
+  sourceType       String?
+  currentVersion   Int             @default(1)
+  acceptedAt       DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  complaints       Complaint[]
+  inquiries        Inquiry[]
+  revisions        AgreementRevision[]
+  modificationRequests AgreementModificationRequest[]
+}
+
+model AgreementRevision {
+  id            String    @id @default(cuid())
+  agreementId   String
+  agreement     Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  version       Int
+  title         String?
+  terms         String    @db.Text
+  notes         String?   @db.Text
+  paymentTerms  String?   @db.Text
+  deliveryTerms String?   @db.Text
+  value         String?
+  startDate     DateTime?
+  dueDate       DateTime?
+  changeSummary String?   @db.Text
+  createdById   String
+  createdBy     User      @relation(fields: [createdById], references: [id])
+  createdAt     DateTime  @default(now())
+
+  @@unique([agreementId, version])
+  @@index([agreementId])
+}
+
+model AgreementModificationRequest {
+  id            String    @id @default(cuid())
+  agreementId   String
+  agreement     Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy   User      @relation(fields: [requestedById], references: [id])
+  message       String    @db.Text
+  metadata      String?   @db.Text
+  createdAt     DateTime  @default(now())
+
+  @@index([agreementId])
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  NEGOTIATING
+  AGREEMENT_CREATED
+  CLOSED
+  LOST
+}
+
+model Inquiry {
+  id                String        @id @default(cuid())
+  productId         String
+  product           Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  vendorId          String
+  vendor            User           @relation("VendorInquiries", fields: [vendorId], references: [id], onDelete: Cascade)
+  buyerId           String
+  buyer             User           @relation("BuyerInquiries", fields: [buyerId], references: [id], onDelete: Cascade)
+  messageThreadId   String?        // Optional: first message id or thread identifier for messaging
+  status            InquiryStatus @default(NEW)
+  notes             String?       @db.Text
+  initialMessage    String        @db.Text
+  companyName       String?
+  country           String?
+  quantity          String?       // Optional quantity/volume
+  budget            String?       // Optional budget range
+  timeline          String?       // Optional timeline
+  agreementId       String?
+  agreement         Agreement?    @relation(fields: [agreementId], references: [id], onDelete: SetNull)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([vendorId])
+  @@index([buyerId])
+  @@index([productId])
+  @@index([status])
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  eventType   String
+  ownerId     String   // User/company this event is for (whose metrics we track)
+  actorId     String?  // User who performed the action (null for anonymous)
+  productId   String?
+  vendorId    String?
+  agreementId String?
+  demoId      String?
+  inquiryId   String?
+  sessionId   String?
+  country     String?
+  metadata    String?  @db.Text // JSON
+  createdAt   DateTime @default(now())
+
+  @@index([ownerId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([ownerId, eventType, createdAt])
+  @@index([productId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String   @db.Text
+  link      String?
+  isRead    Boolean  @default(false)
+  metadata  String?  @db.Text // JSON
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt])
 }
 
 model ForumCategory {
@@ -158,39 +508,200 @@ model ForumPost {
   likes     Int         @default(0)
 }
 
+/// Weekly showcase workflow: prefer SUBMITTED → UNDER_REVIEW → APPROVED → SCHEDULED/LIVE/COMPLETED.
+/// PENDING/REJECTED kept for legacy rows; avoid new demos stuck in PENDING without review.
 enum DemoStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  SCHEDULED
+  LIVE
+  COMPLETED
+  PENDING
+  REJECTED
+}
+
+/// Application queue for weekly featured demonstrations (not User.demoAccess* legacy fields).
+enum DemoAccessRequestStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
+enum DemoUpdateRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Curated weekly demonstrations only (application → approval → weekly slot → live/completed).
+/// Not a generic on-demand demo library; evergreen product video lives on Product listings.
 model DemoClass {
-  id            String     @id @default(cuid())
-  title         String
-  description   String     @db.Text
-  videoUrl      String?
-  schedule      DateTime
-  price         Float
-  isPaid        Boolean    @default(true)
-  status        DemoStatus @default(PENDING)
+  id             String     @id @default(cuid())
+  title          String
+  description    String     @db.Text
+  /// Optional promo/live clip for this weekly slot — not a browsable “demo library”; product listings own evergreen video.
+  videoUrl       String?
+  schedule       DateTime
+  price          Float
+  isPaid         Boolean    @default(true)
+  status         DemoStatus @default(PENDING)
+  /// Link back to approved access request used to seed this draft/programming record.
+  sourceRequestId String?    @unique
+  sourceRequest  DemoAccessRequest? @relation("ApprovedRequestDemo", fields: [sourceRequestId], references: [id], onDelete: SetNull)
   manufacturerId String
-  manufacturer  User       @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
-  category      String
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  manufacturer   User       @relation(fields: [manufacturerId], references: [id], onDelete: Cascade)
+  category       String
+  location       String?    // Location of the demonstration
+  maxAttendees   Int?       // Maximum number of attendees
+  metadata       String?    @db.Text // JSON string for images, topics, requirements, benefits
+  headerImage    String?    // Header image for the demonstration detail page
+  advertImage    String?    // Advertisement image for homepage Featured Live Demo section
+  featuredWeekStart DateTime? // Start of ISO week for curated featured demo slot
+  isFeatured     Boolean    @default(false)
+  featuredAt     DateTime?
+  viewCount      Int        @default(0)
+  registrationCount Int     @default(0)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  registrations  DemoRegistration[]
+  updateRequests DemoUpdateRequest[]
+}
+
+model DemoRegistration {
+  id          String   @id @default(cuid())
+  demoId       String
+  demo         DemoClass @relation(fields: [demoId], references: [id], onDelete: Cascade)
+  userId       String?
+  email        String?
+  name         String?
+  companyName  String?
+  phone        String?
+  message      String?  @db.Text
+  source       String?  @default("REGISTER_INTEREST")
+  createdAt    DateTime @default(now())
+
+  @@index([demoId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/// Admin-defined slots that applicants can reserve; supports weekly curation (not generic “inventory”).
+model AvailableDemoDate {
+  id          String   @id @default(cuid())
+  date        DateTime @unique // The available date (only date part, time can be set separately)
+  time        String?  // Optional time slot (e.g., "10:00", "14:00")
+  isAvailable Boolean  @default(true) // Whether this date is still available
+  assignedTo  String?  // User ID if assigned
+  createdBy   String   // Admin user ID who created this date
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DemoAccessRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String   @db.Text
+  description String   @db.Text
+  /// JSON string: structured demonstration application (curation, scheduling, audience, media prefs)
+  applicationPayload String? @db.Text
+  status      DemoAccessRequestStatus @default(PENDING)
+  preferredDate DateTime? // User's preferred date or slot hint (weekly programme support)
+  assignedDate DateTime? // Date assigned by admin (mirrors AvailableDemoDate when set)
+  assignedDateId String? // ID of AvailableDemoDate if assigned
+  linkedDemo   DemoClass? @relation("ApprovedRequestDemo")
+  requestedAt DateTime @default(now())
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DemoUpdateRequest {
+  id            String                  @id @default(cuid())
+  demoId         String
+  demo           DemoClass              @relation(fields: [demoId], references: [id], onDelete: Cascade)
+  requestedById  String
+  requestedBy    User                   @relation("DemoUpdateRequestsRequestedBy", fields: [requestedById], references: [id], onDelete: Cascade)
+  status         DemoUpdateRequestStatus @default(PENDING)
+  changesJson    String                  @db.Text
+  reason         String?                 @db.Text
+  reviewedById   String?
+  reviewedBy     User?                   @relation("DemoUpdateRequestsReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNote     String?                 @db.Text
+  reviewedAt     DateTime?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  @@index([demoId, status])
+  @@index([requestedById, status])
 }
 
 model Complaint {
-  id          String    @id @default(cuid())
-  title       String
-  description String    @db.Text
-  status      String    @default("OPEN") // OPEN, UNDER_REVIEW, RESOLVED
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agreementId String?
-  agreement   Agreement? @relation(fields: [agreementId], references: [id], onDelete: SetNull)
-  evidence    String?   @db.Text // JSON array of evidence URLs
-  resolution  String?   @db.Text
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                            String             @id @default(cuid())
+  title                         String
+  description                   String             @db.Text
+  status                        String             @default("DISPUTED") // DISPUTED, UNDER_REVIEW, RESOLVED, ESCALATED, CLOSED
+  userId                        String
+  user                          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agreementId                   String?
+  agreement                     Agreement?         @relation(fields: [agreementId], references: [id], onDelete: SetNull)
+  evidence                      String?             @db.Text // JSON array of evidence URLs
+  resolution                    String?            @db.Text
+  proposedResolution            String?            @db.Text
+  resolutionNote                String?            @db.Text
+  initiatorConfirmedResolutionAt DateTime?
+  receiverConfirmedResolutionAt  DateTime?
+  createdAt                     DateTime           @default(now())
+  updatedAt                     DateTime           @updatedAt
+  disputeResponses              DisputeResponse[]
+}
+
+model DisputeResponse {
+  id                String    @id @default(cuid())
+  complaintId       String
+  complaint         Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String    // RESPONSE, EVIDENCE, PROPOSAL
+  message           String?   @db.Text
+  evidence          String?   @db.Text // JSON array of URLs
+  proposedResolution String?  @db.Text
+  createdAt         DateTime  @default(now())
+
+  @@index([complaintId])
+  @@index([userId])
+}
+
+model SubscriptionPlan {
+  id            String             @id @default(cuid())
+  name          String
+  tier          String // FREE, BASIC, PREMIUM, ENTERPRISE
+  price         Float
+  interval      String // monthly, yearly
+  features      String             @db.Text // JSON array of features
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  subscriptions UserSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model UserSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  planId    String
+  startDate DateTime
+  endDate   DateTime
+  status    String // active, cancelled, expired
+  autoRenew Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("user_subscriptions")
 }

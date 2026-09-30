@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -22,29 +22,73 @@ const notificationFormSchema = z.object({
 
 type NotificationFormValues = z.infer<typeof notificationFormSchema>
 
+const defaultValues: NotificationFormValues = {
+  marketplaceUpdates: false,
+  agreementUpdates: true,
+  newMessages: true,
+  forumActivity: false,
+  demoAnnouncements: true,
+  marketingEmails: false,
+}
+
 export function NotificationForm({ userId }: { userId: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(true)
 
-  // In a real app, you would fetch the user's current notification preferences
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationFormSchema),
-    defaultValues: {
-      marketplaceUpdates: false,
-      agreementUpdates: true,
-      newMessages: true,
-      forumActivity: false,
-      demoAnnouncements: true,
-      marketingEmails: false,
-    },
+    defaultValues,
   })
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchPreferences() {
+      try {
+        const res = await fetch("/api/users/notification-preferences", { cache: "no-store" })
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        form.reset({
+          marketplaceUpdates: Boolean(data.marketplaceUpdates),
+          agreementUpdates: Boolean(data.agreementUpdates),
+          newMessages: Boolean(data.newMessages),
+          forumActivity: Boolean(data.forumActivity),
+          demoAnnouncements: Boolean(data.demoAnnouncements),
+          marketingEmails: Boolean(data.marketingEmails),
+        })
+      } catch {
+        // keep default values
+      } finally {
+        if (!cancelled) setIsFetching(false)
+      }
+    }
+    fetchPreferences()
+    return () => {
+      cancelled = true
+    }
+  }, [form])
 
   async function onSubmit(data: NotificationFormValues) {
     setIsLoading(true)
 
     try {
-      // In a real app, you would send this data to your API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await fetch("/api/users/notification-preferences", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        let message = "Failed to update notification preferences"
+        try {
+          const parsed = JSON.parse(text)
+          if (parsed?.error) message = parsed.error
+        } catch {
+          if (text) message = text
+        }
+        throw new Error(message)
+      }
 
       toast({
         title: "Notification preferences updated",
@@ -55,7 +99,7 @@ export function NotificationForm({ userId }: { userId: string }) {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update notification preferences. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update notification preferences. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -166,8 +210,8 @@ export function NotificationForm({ userId }: { userId: string }) {
           />
         </div>
 
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Saving..." : "Save preferences"}
+        <Button type="submit" disabled={isLoading || isFetching}>
+          {isFetching ? "Loading..." : isLoading ? "Saving..." : "Save preferences"}
         </Button>
       </form>
     </Form>

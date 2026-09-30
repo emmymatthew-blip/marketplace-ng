@@ -2,6 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Calendar alignment fixes */
+.rdp-weekdays {
+  display: flex;
+  width: 100%;
+}
+
+.rdp-weekday {
+  flex: 1;
+  text-align: center;
+}
+
+.rdp-week {
+  display: flex;
+  width: 100%;
+}
+
+.rdp-day {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rdp-day_button {
+  margin: 0 auto;
+}
+
+/* Available days indicator */
+.rdp-day.rdp-available:not(.rdp-disabled):not(.rdp-outside) .rdp-day_button {
+  position: relative;
+  color: hsl(var(--primary));
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.rdp-day.rdp-available:not(.rdp-disabled):not(.rdp-outside) .rdp-day_button::before {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: hsl(var(--primary));
+}
+
+.rdp-day.rdp-available:not(.rdp-disabled):not(.rdp-outside):hover .rdp-day_button {
+  background-color: hsl(var(--primary) / 0.1);
+  transform: scale(1.05);
+}
+
+.rdp-day.rdp-available:not(.rdp-disabled):not(.rdp-outside) .rdp-day_button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+/* Make disabled/unavailable dates faint but visible - override button variants */
+.rdp-day.rdp-disabled .rdp-day_button,
+.rdp-day.rdp-disabled button.rdp-day_button,
+td.rdp-disabled .rdp-day_button,
+td.rdp-disabled button.rdp-day_button {
+  opacity: 0.3 !important;
+  color: hsl(var(--muted-foreground)) !important;
+  pointer-events: none !important;
+}
+
+.rdp-day.rdp-outside .rdp-day_button,
+.rdp-day.rdp-outside button.rdp-day_button,
+td.rdp-outside .rdp-day_button,
+td.rdp-outside button.rdp-day_button {
+  opacity: 0.3 !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.rdp-day.rdp-disabled.rdp-outside .rdp-day_button,
+.rdp-day.rdp-disabled.rdp-outside button.rdp-day_button,
+td.rdp-disabled.rdp-outside .rdp-day_button,
+td.rdp-disabled.rdp-outside button.rdp-day_button {
+  opacity: 0.25 !important;
+}
+
+/* Override the disabled:opacity-50 from button variants */
+.rdp-day.rdp-disabled[role="gridcell"] .rdp-day_button,
+.rdp-day.rdp-outside[role="gridcell"] .rdp-day_button {
+  opacity: 0.3 !important;
+}
+
 :root {
   --foreground-rgb: 34, 34, 34;
   --background-rgb: 246, 246, 246;

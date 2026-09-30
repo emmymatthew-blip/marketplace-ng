@@ -10,6 +10,7 @@ import { Search } from "@/components/search"
 import { UserAccountNav } from "@/components/user-account-nav"
 import { CreateThreadForm } from "@/components/forum/create-thread-form"
 import { ArrowLeft, Printer } from "lucide-react"
+import { Footer } from "@/components/footer"
 
 // Mock data - would be fetched from API in production
 const mockCategories = [
@@ -48,10 +49,6 @@ export default function NewThreadPage() {
       <header className="sticky top-0 z-40 border-b bg-background">
         <div className="container flex h-16 items-center justify-between py-4">
           <MainNav />
-          <div className="flex items-center gap-4">
-            <Search />
-            <UserAccountNav />
-          </div>
         </div>
       </header>
       <main className="flex-1">
@@ -77,28 +74,7 @@ export default function NewThreadPage() {
           </div>
         </div>
       </main>
-      <footer className="border-t bg-muted">
-        <div className="container flex flex-col gap-6 py-8 md:flex-row md:items-center md:justify-between md:py-12">
-          <div className="flex flex-col gap-2">
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Printer className="h-6 w-6" />
-              <span className="">NG MARKETPLACE</span>
-            </Link>
-            <p className="text-sm text-muted-foreground">© 2023 NG MARKETPLACE. All rights reserved.</p>
-          </div>
-          <div className="flex gap-4">
-            <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
-              Terms of Service
-            </Link>
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
-              Privacy Policy
-            </Link>
-            <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

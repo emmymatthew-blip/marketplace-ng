@@ -5,6 +5,12 @@ declare module "next-auth" {
     id: string
     role: UserRole
     isVerified: boolean
+    yearsInBusiness?: number
+    teamSize?: string
+    companyName?: string
+    phone?: string
+    location?: string
+    bio?: string
   }
 
   interface Session {
@@ -12,6 +18,12 @@ declare module "next-auth" {
       id: string
       role: string
       isVerified: boolean
+      yearsInBusiness?: number
+      teamSize?: string
+      companyName?: string
+      phone?: string
+      location?: string
+      bio?: string
     }
   }
 }
@@ -21,5 +33,11 @@ declare module "next-auth/jwt" {
     id: string
     role: UserRole
     isVerified: boolean
+    yearsInBusiness?: number
+    teamSize?: string
+    companyName?: string
+    phone?: string
+    location?: string
+    bio?: string
   }
 }

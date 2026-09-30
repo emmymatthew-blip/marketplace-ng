@@ -43,7 +43,15 @@ export function AccountForm({ user }: { user: any }) {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update email")
+        const text = await response.text()
+        let message = "Failed to update email"
+        try {
+          const data = JSON.parse(text)
+          if (data?.error) message = data.error
+        } catch {
+          if (text) message = text
+        }
+        throw new Error(message)
       }
 
       toast({
@@ -53,9 +61,10 @@ export function AccountForm({ user }: { user: any }) {
 
       router.refresh()
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to update email. Please try again."
       toast({
         title: "Error",
-        description: "Failed to update email. Please try again.",
+        description: message,
         variant: "destructive",
       })
     } finally {

@@ -5,14 +5,17 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FeaturedVendors } from "@/components/featured-vendors"
-import { UpcomingDemos } from "@/components/upcoming-demos"
 import { MainNav } from "@/components/main-nav"
 import { Search } from "@/components/search"
 import { UserAccountNav } from "@/components/user-account-nav"
-import { Printer, Users, FileText, BookOpen, Award, ArrowRight, CheckCircle2 } from "lucide-react"
+import { Printer, Users, FileText, BookOpen, Award, ArrowRight, CheckCircle2, Globe2, Briefcase, Phone, Mail, Linkedin, Instagram, Facebook, Twitter } from "lucide-react"
 import { useState, useEffect } from "react"
 import { FloatingForum } from "./components/floating-forum"
 import { Footer } from "@/components/footer"
+import { FeaturedProducts } from "@/components/featured-products"
+import { Badge } from "@/components/ui/badge"
+import { FeaturedLiveDemo } from "@/components/featured-live-demo"
+import { WEEKLY_DEMO_APPLICATION_HREF } from "@/lib/demo-routes"
 
 const heroImages = [
   {
@@ -34,49 +37,39 @@ const heroImages = [
 ]
 
 const adContent = [
-  {
-    image: {
-      src: "/images/IMG_9890 1 (2).png",
-      alt: "Premium Printing Equipment"
-    },
-    title: "Showcase Your Products",
-    subtitle: "To Industry Leaders",
-    description: "Join the premier platform for printing professionals. Reach thousands of verified buyers and expand your business reach.",
-    primaryButton: "Start Advertising",
-    secondaryButton: "View Pricing"
-  },
+
   {
     image: {
       src: "/images/b7a4dab131.jpg",
-      alt: "Printing Solutions"
+      alt: "Trusted Gateway"
     },
-    title: "Connect With Experts",
-    subtitle: "In Printing Technology",
-    description: "Network with industry leaders and stay ahead of the latest printing innovations and trends.",
-    primaryButton: "Join Network",
-    secondaryButton: "Learn More"
+    title: "Secured access to the Nigeria Printing & Graphic Communication Market",
+    subtitle: "",
+            description: "Your trusted gateway to Nigeria's Printing and Graphics Communications Market. Navigate the Nigerian printing landscape with confidence through our secure and reliable platform. Connect with verified sellers and access comprehensive printing solutions.",
+    primaryButton: "Get Started",
+    secondaryButton: "View Services"
   },
   {
     image: {
       src: "/images/8921fe63ae.jpg",
-      alt: "Industry Technology"
+      alt: "Thriving Industry"
     },
-    title: "Grow Your Business",
-    subtitle: "With Smart Solutions",
-    description: "Access cutting-edge printing technology and solutions to scale your operations efficiently.",
-    primaryButton: "Explore Solutions",
-    secondaryButton: "Get Demo"
+    title: "Unlocking opportunities in Nigeria's thriving Printing and Graphics Communication Industry",
+    subtitle: "",
+            description: "Your trusted gateway to Nigeria's Printing and Graphics Communications Market. Tap into the dynamic growth of Nigeria's printing sector. Discover new business opportunities, innovative technologies, and strategic partnerships in this rapidly expanding market.",
+    primaryButton: "Discover Opportunities",
+    secondaryButton: "Join Network"
   },
   {
     image: {
       src: "/images/797867fbc3.jpg",
-      alt: "Professional Printing"
+      alt: "Buyers and Sellers"
     },
-    title: "Premium Services",
-    subtitle: "For Your Success",
-    description: "Get access to exclusive printing services and professional support for your business needs.",
-    primaryButton: "View Services",
-    secondaryButton: "Contact Us"
+    title: "Connecting buyers and sellers in Nigeria Printing and Graphics Communications Sector",
+    subtitle: "",
+            description: "Your trusted gateway to Nigeria's Printing and Graphics Communications Market. Facilitate seamless transactions between printing professionals. Our platform brings together verified buyers and sellers for mutually beneficial business relationships.",
+    primaryButton: "Connect Now",
+    secondaryButton: "Register"
   }
 ]
 
@@ -95,7 +88,7 @@ export default function Home() {
       setCurrentAdIndex((prevIndex) => 
         prevIndex === adContent.length - 1 ? 0 : prevIndex + 1
       )
-    }, 4000)
+    }, 10000)
 
     return () => {
       clearInterval(timer)
@@ -122,25 +115,50 @@ export default function Home() {
           </div>
           <div className="container mx-auto relative z-10">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
-              <div className="flex flex-col justify-center space-y-6">
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold" style={{ color: '#ff9017' }}>Welcome to NG MARKETPLACE</h2>
-                  <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl xl:text-6xl/none text-white">
-                    The Premier Platform for the Printing Industry
-                  </h1>
-                  <p className="max-w-[600px] text-white/90 md:text-xl/relaxed mt-2">
-                    Connect with verified printers, manufacturers, and sellers. Discover opportunities, grow your network, and access exclusive industry resources.
-                  </p>
+              <div className="flex flex-col justify-center space-y-8">
+                <div className="space-y-6">
+                  <div className="inline-block">
+                    <h2 className="text-xl font-bold tracking-wider uppercase" style={{ color: '#ff9017' }}>PRINTMARKET NG</h2>
+                    <div className="h-1 w-16 bg-[#ff9017] mt-2 rounded-full"></div>
+                  </div>
+                  
+                  <div className="">
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl xl:text-6xl/none text-white ">
+                      Trusted gateway to Nigeria's Printing and Graphics Market.
+                    </h1>
+                  </div>
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <Button asChild size="lg" className="font-bold shadow-lg px-8 py-4 text-lg transform hover:scale-105 transition-all duration-300" style={{ backgroundColor: '#ff9017', color: 'white' }}>
+                <div className="flex flex-col gap-4">
+                  <Button asChild size="lg" className="font-bold shadow-lg px-8 py-4 text-lg transform hover:scale-105 transition-all duration-300 w-fit" style={{ backgroundColor: '#ff9017', color: 'white' }}>
                     <Link href="/register" className="flex items-center gap-2">
                       Get Started <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
                   </Button>
-                  <span className="text-base text-white font-semibold mt-2 sm:mt-0 sm:ml-6">
-                    Call <a href="tel:+2347012345678" className="font-bold hover:underline" style={{ color: '#ff9017' }}>(234) 701-234-5678</a>
-                  </span>
+                  
+                  {/* Social Media Section - Positioned below CTA for better hierarchy */}
+                  <div className="flex flex-col gap-3">
+                    <p className="text-white/80 text-sm font-medium">Connect with us</p>
+                    <div className="flex items-center gap-3">
+                      <a href="tel:+2343006814" className="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-all duration-300 group" title="Phone">
+                        <Phone className="h-4 w-4 text-white group-hover:text-[#ff9017]" />
+                      </a>
+                      <a href="mailto:info@printmarketng.com" className="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-all duration-300 group" title="Email">
+                        <Mail className="h-4 w-4 text-white group-hover:text-[#ff9017]" />
+                      </a>
+                      <a href="https://linkedin.com/company/printmarketng" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-all duration-300 group" title="LinkedIn">
+                        <Linkedin className="h-4 w-4 text-white group-hover:text-[#ff9017]" />
+                      </a>
+                      <a href="https://instagram.com/printmarketng" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-all duration-300 group" title="Instagram">
+                        <Instagram className="h-4 w-4 text-white group-hover:text-[#ff9017]" />
+                      </a>
+                      <a href="https://facebook.com/printmarketng" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-all duration-300 group" title="Facebook">
+                        <Facebook className="h-4 w-4 text-white group-hover:text-[#ff9017]" />
+                      </a>
+                      <a href="https://twitter.com/printmarketng" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm p-2 rounded-lg hover:bg-white/20 transition-all duration-300 group" title="Twitter">
+                        <Twitter className="h-4 w-4 text-white group-hover:text-[#ff9017]" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-center">
@@ -203,8 +221,8 @@ export default function Home() {
                           key={item.image.src}
                           className={`absolute inset-0 transition-all duration-700 ease-in-out transform ${
                             index === currentAdIndex 
-                              ? 'opacity-100 translate-x-0' 
-                              : 'opacity-0 translate-x-4'
+                              ? 'opacity-100 translate-x-0 z-10' 
+                              : 'opacity-0 translate-x-4 '
                           }`}
                         >
                           <Image
@@ -215,15 +233,17 @@ export default function Home() {
                           />
                         </div>
                       ))}
-                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                      {/* Enhanced Indicators */}
+                      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
                         {adContent.map((_, index) => (
                           <button
                             key={index}
                             onClick={() => setCurrentAdIndex(index)}
-                            className={`w-2 h-2 rounded-full transition-all duration-300 ease-in-out ${
+                            aria-label={`Go to slide ${index + 1}`}
+                            className={`rounded-full transition-all duration-300 ease-in-out ${
                               index === currentAdIndex 
-                                ? 'bg-[#ff9017] w-4' 
-                                : 'bg-white/50 hover:bg-white/75'
+                                ? 'bg-[#ff9017] w-8 h-3 shadow-lg' 
+                                : 'bg-white/60 hover:bg-white/80 w-3 h-3'
                             }`}
                           />
                         ))}
@@ -248,8 +268,8 @@ export default function Home() {
                           key={index}
                           className={`transition-all duration-700 ease-in-out transform ${
                             index === currentAdIndex 
-                              ? 'opacity-100 translate-x-0' 
-                              : 'opacity-0 -translate-x-4 absolute'
+                              ? 'opacity-100 translate-x-0 relative z-10' 
+                              : 'opacity-0 -translate-x-4 absolute '
                           }`}
                         >
                           <div className="space-y-8">
@@ -289,6 +309,8 @@ export default function Home() {
             </div>
           </div>
 
+
+                      
           <section className="w-full py-16 md:py-24 lg:py-32 bg-gradient-to-br from-white via-primary/5 to-primary/10 relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
@@ -308,35 +330,35 @@ export default function Home() {
                   </h2>
                   <div className="h-1 w-24 bg-gradient-to-r from-[#326de0] to-[#ce057d] mx-auto mt-4 rounded-full"></div>
                 </div>
-                <p className="max-w-[900px] text-gray-600 md:text-xl/relaxed">
-                  NG MARKETPLACE is not just another e-commerce platform. We're a specialized hub for the printing industry.
-                </p>
+                                  <p className="max-w-[900px] text-gray-600 md:text-xl/relaxed">
+                    PrintMarket NG offers a comprehensive suite of services across three key dimensions:
+                  </p>
               </div>
 
-              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <Card className="relative overflow-hidden group hover:scale-105 transition-all duration-300 bg-white/90 backdrop-blur-sm border-2 border-[#326de0]/10 shadow-xl hover:shadow-2xl">
                   <div className="absolute inset-0 bg-gradient-to-br from-[#326de0]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <CardHeader>
                     <div className="flex justify-center">
                       <div className="rounded-full bg-[#326de0]/10 p-4 group-hover:scale-110 transition-transform duration-300">
-                        <Users className="h-8 w-8 text-[#326de0]" />
+                        <Globe2 className="h-8 w-8 text-[#326de0]" />
                       </div>
                     </div>
-                    <CardTitle className="mt-4 text-center text-[#326de0] text-xl font-bold">Connect</CardTitle>
+                    <CardTitle className="mt-4 text-center text-[#326de0] text-xl font-bold">Global Market Access</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3 text-gray-600">
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#326de0]" />
-                        <span>Find verified printers</span>
+                        <span>Your trusted gateway to Nigeria's Printing and Graphics Communications Market</span>
                       </li>
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#326de0]" />
-                        <span>Connect with manufacturers</span>
+                        <span>Opening up the world to Nigeria's vibrant printing market</span>
                       </li>
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#326de0]" />
-                        <span>Network with sellers</span>
+                        <span>Verified buyers and sellers network</span>
                       </li>
                     </ul>
                   </CardContent>
@@ -347,24 +369,24 @@ export default function Home() {
                   <CardHeader>
                     <div className="flex justify-center">
                       <div className="rounded-full bg-[#ff9017]/10 p-4 group-hover:scale-110 transition-transform duration-300">
-                        <Award className="h-8 w-8 text-[#ff9017]" />
+                        <Briefcase className="h-8 w-8 text-[#ff9017]" />
                       </div>
                     </div>
-                    <CardTitle className="mt-4 text-center text-[#ff9017] text-xl font-bold">Verify</CardTitle>
+                    <CardTitle className="mt-4 text-center text-[#ff9017] text-xl font-bold">Business Support Services</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3 text-gray-600">
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#ff9017]" />
-                        <span>CIPPON verification</span>
+                        <span>Your trusted gateway to Nigeria's Printing and Graphics Communications Market</span>
                       </li>
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#ff9017]" />
-                        <span>Legitimate professionals</span>
+                        <span>Seamless operations and growth facilitation</span>
                       </li>
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#ff9017]" />
-                        <span>Trusted partners</span>
+                        <span>Professional business advisory and support</span>
                       </li>
                     </ul>
                   </CardContent>
@@ -375,136 +397,191 @@ export default function Home() {
                   <CardHeader>
                     <div className="flex justify-center">
                       <div className="rounded-full bg-[#ce057d]/10 p-4 group-hover:scale-110 transition-transform duration-300">
-                        <FileText className="h-8 w-8 text-[#ce057d]" />
+                        <Users className="h-8 w-8 text-[#ce057d]" />
                       </div>
                     </div>
-                    <CardTitle className="mt-4 text-center text-[#ce057d] text-xl font-bold">Agree</CardTitle>
+                    <CardTitle className="mt-4 text-center text-[#ce057d] text-xl font-bold">Community Engagement</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3 text-gray-600">
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#ce057d]" />
-                        <span>Service agreements</span>
+                        <span>Fostering meaningful connections between Nigerian printers</span>
                       </li>
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#ce057d]" />
-                        <span>Clear terms</span>
+                        <span>Interactive forums and knowledge sharing</span>
                       </li>
                       <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
                         <CheckCircle2 className="h-5 w-5 text-[#ce057d]" />
-                        <span>Secure contracts</span>
+                        <span>Discussion of business needs and collaboration</span>
                       </li>
                     </ul>
                   </CardContent>
                 </Card>
-
-                <Card className="relative overflow-hidden group hover:scale-105 transition-all duration-300 bg-white/90 backdrop-blur-sm border-2 border-[#ff9017]/10 shadow-xl hover:shadow-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#ff9017]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <CardHeader>
-                    <div className="flex justify-center">
-                      <div className="rounded-full bg-[#ff9017]/10 p-4 group-hover:scale-110 transition-transform duration-300">
-                        <BookOpen className="h-8 w-8 text-[#ff9017]" />
-                      </div>
-                    </div>
-                    <CardTitle className="mt-4 text-center text-[#ff9017] text-xl font-bold">Learn</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3 text-gray-600">
-                      <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
-                        <CheckCircle2 className="h-5 w-5 text-[#ff9017]" />
-                        <span>Demo classes</span>
-                      </li>
-                      <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
-                        <CheckCircle2 className="h-5 w-5 text-[#ff9017]" />
-                        <span>Industry forums</span>
-                      </li>
-                      <li className="flex items-center gap-3 group-hover:translate-x-1 transition-transform">
-                        <CheckCircle2 className="h-5 w-5 text-[#ff9017]" />
-                        <span>Expert knowledge</span>
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
+              </div>
+              
+              <div className="mt-12 text-center">
+                <Button 
+                  asChild
+                  className="bg-gradient-to-r from-[#326de0] to-[#ce057d] text-white hover:from-[#326de0]/90 hover:to-[#ce057d]/90 px-8 py-3 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  size="lg"
+                >
+                  <Link href="/about">
+                    See More
+                  </Link>
+                </Button>
               </div>
             </div>
           </section>
 
-        {/* Featured Vendors Section */}
-        <section className="w-full py-8 md:py-24 lg:py-32 bg-gradient-to-br from-white via-primary/5 to-primary/10 relative overflow-hidden">
-          {/* Background Pattern */}
+          {/* Featured Products Section */}
+          <section className="w-full py-8 md:py-24 lg:py-32 bg-gradient-to-br from-white via-primary/5 to-primary/10 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <Image
+                src="/images/20170816_154040-scaled-e1583853764343 2.png"
+                alt="Background Pattern"
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            <div className="container px-4 md:px-6 relative z-10">
+              <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8 md:mb-16">
+                <div className="inline-block">
+                  <h2 className="text-3xl font-bold tracking-tight md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-[#326de0] to-[#ce057d]">
+                    PRIME PRODUCTS
+                  </h2>
+                  <div className="h-1 w-24 bg-gradient-to-r from-[#326de0] to-[#ce057d] mx-auto mt-4 rounded-full"></div>
+                </div>
+                <p className="max-w-[900px] text-gray-600 md:text-xl/relaxed">
+                  Explore our prime featured product services to position your product for prominence
+                </p>
+              </div>
+
+              <div className="relative">
+                <div className="relative bg-white rounded-2xl shadow-2xl p-2 md:p-8 border border-gray-100">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#326de0]/5 to-[#ce057d]/5 rounded-2xl"></div>
+                  <div className="relative z-10">
+                    <FeaturedProducts />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 md:mt-12 text-center">
+                <Button 
+                  asChild
+                  className="bg-gradient-to-r from-[#326de0] to-[#ce057d] text-white hover:from-[#326de0]/90 hover:to-[#ce057d]/90 px-6 md:px-8 py-2 md:py-3 font-semibold transition-all duration-300 text-sm md:text-lg shadow-lg hover:shadow-xl"
+                  size="lg"
+                >
+                  <Link href="/marketplace?activeTab=products">View All Products</Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+
+          {/* Featured Vendors Section */}
+          <section className="w-full py-8 md:py-24 lg:py-32 bg-gradient-to-br from-white via-primary/5 to-primary/10 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-5">
+              <Image
+                src="/images/20170816_154040-scaled-e1583853764343 2.png"
+                alt="Background Pattern"
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            <div className="container px-2 md:px-4 mx-auto relative z-10">
+              <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8 md:mb-16">
+                <div className="inline-block">
+                  <h2 className="text-3xl font-bold tracking-tight md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-[#326de0] to-[#ce057d]">
+                    VERIFIED SELLERS
+                  </h2>
+                  <div className="h-1 w-24 bg-gradient-to-r from-[#326de0] to-[#ce057d] mx-auto mt-4 rounded-full"></div>
+                </div>
+                <p className="max-w-[900px] text-gray-600 text-sm md:text-xl/relaxed mt-4 md:mt-6">
+                  Get connected to verified buyers and sellers to meet your needs
+                </p>
+              </div>
+
+              <div className="relative">
+                <div className="relative bg-white rounded-2xl shadow-2xl p-2 md:p-8 border border-gray-100">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#326de0]/5 to-[#ce057d]/5 rounded-2xl"></div>
+                  <div className="relative z-10">
+                    <FeaturedVendors />
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 md:mt-12 text-center">
+                <Button 
+                  className="bg-gradient-to-r from-[#326de0] to-[#ce057d] text-white hover:from-[#326de0]/90 hover:to-[#ce057d]/90 px-6 md:px-8 py-2 md:py-3 font-semibold transition-all duration-300 text-sm md:text-lg shadow-lg hover:shadow-xl"
+                  size="lg"
+                >
+                  <Link href="/marketplace?activeTab=vendors">View All Sellers</Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+
+        <section className="w-full py-16 md:py-32 lg:py-40 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+          {/* Premium Background Pattern */}
           <div className="absolute inset-0 opacity-5">
             <Image
               src="/images/20170816_154040-scaled-e1583853764343 2.png"
-              alt="Background Pattern"
+              alt="Premium Background Pattern"
               fill
               className="object-cover"
             />
           </div>
 
-          <div className="container px-2 md:px-4 mx-auto relative z-10">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8 md:mb-16">
-              <div className="inline-block">
-                <h2 className="text-3xl font-bold tracking-tight md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-[#326de0] to-[#ce057d]">
-                  Featured Vendors
+          <div className="container px-4 md:px-6 relative z-10">
+            <div className="flex flex-col items-center justify-center space-y-6 text-center mb-12 md:mb-20">
+              <div className="inline-block relative">
+                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-brand-primary via-brand-pink to-brand-secondary text-white text-xs uppercase tracking-widest py-1 px-4 rounded-full font-semibold">
+                  Premium Position
+                </div>
+                <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white">
+                  Featured Live Demonstration
                 </h2>
-                <div className="h-1 w-24 bg-gradient-to-r from-[#326de0] to-[#ce057d] mx-auto mt-4 rounded-full"></div>
+                <div className="h-1 w-32 bg-gradient-to-r from-brand-primary via-brand-pink to-brand-secondary mx-auto mt-6 rounded-full"></div>
               </div>
-              <p className="max-w-[900px] text-gray-600 text-sm md:text-xl/relaxed mt-4 md:mt-6">
-                Discover our verified and trusted printing industry partners who are ready to serve your needs.
+              <p className="max-w-[800px] text-gray-300 text-lg md:text-xl/relaxed mt-6">
+                Curated weekly live demonstrations: one featured spotlight per week, plus an approved pipeline of upcoming
+                sessions. Connect with manufacturers — product video stays on listings; this is scheduled programme
+                access only.
               </p>
+              <div className="flex gap-4 mt-4">
+                <Badge className="bg-gradient-to-r from-brand-primary to-brand-pink text-white px-4 py-1 text-sm font-semibold">
+                  Weekly spotlight
+                </Badge>
+                <Badge className="bg-white/10 text-white px-4 py-1 text-sm font-semibold backdrop-blur-sm">
+                  Application &amp; approval
+                </Badge>
+                <Badge className="bg-white/10 text-white px-4 py-1 text-sm font-semibold backdrop-blur-sm">
+                  Scheduled sessions
+                </Badge>
+              </div>
             </div>
 
             <div className="relative">
-              <div className="relative bg-white rounded-2xl shadow-2xl p-2 md:p-8 border border-gray-100">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#326de0]/5 to-[#ce057d]/5 rounded-2xl"></div>
-                <div className="relative z-10">
-                  <FeaturedVendors />
-                </div>
-              </div>
+              <FeaturedLiveDemo />
             </div>
 
-            <div className="mt-8 md:mt-12 text-center">
+            <div className="mt-12 text-center">
+              <p className="text-white/60 text-sm mb-6">
+                Apply to host a weekly demonstration — editorial review, then weekly slot assignment
+              </p>
               <Button 
-                className="bg-gradient-to-r from-[#326de0] to-[#ce057d] text-white hover:from-[#326de0]/90 hover:to-[#ce057d]/90 px-6 md:px-8 py-2 md:py-3 font-semibold transition-all duration-300 text-sm md:text-lg shadow-lg hover:shadow-xl"
-                size="lg"
+                asChild
+                className="bg-gradient-to-r from-brand-primary via-brand-pink to-brand-secondary text-white hover:from-brand-primary/90 hover:via-brand-pink/90 hover:to-brand-secondary/90 px-8 py-3 font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
               >
-                View All Vendors
+                <Link href={WEEKLY_DEMO_APPLICATION_HREF}>
+                  Apply to host a demonstration
+                </Link>
               </Button>
-            </div>
-          </div>
-        </section>
-
-        <section className="w-full py-8 md:py-24 lg:py-32 bg-gradient-to-br from-primary via-primary to-primary relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <Image
-              src="/images/20170816_154040-scaled-e1583853764343 2.png"
-              alt="Background Pattern"
-              fill
-              className="object-cover"
-            />
-          </div>
-
-          <div className="container px-2 md:px-4 mx-auto relative z-10">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center mb-8 md:mb-16">
-              <div className="inline-block">
-                <h2 className="text-3xl font-bold tracking-tight md:text-5xl text-white">
-                  Upcoming Demonstrations
-                </h2>
-                <div className="h-1 w-24 bg-gradient-to-r from-[#e94560] to-[#ff9017] mx-auto mt-4 rounded-full"></div>
-              </div>
-              <p className="max-w-[900px] text-gray-300 text-sm md:text-xl/relaxed mt-4 md:mt-6">
-                Learn from industry experts through our exclusive manufacturer demonstration classes and stay ahead of the latest printing innovations.
-              </p>
-            </div>
-
-            <div className="relative">
-              <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl shadow-2xl p-2 md:p-8 border border-white/20">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#e94560]/10 to-[#ff9017]/10 rounded-2xl"></div>
-                <div className="relative z-10">
-                  <UpcomingDemos />
-                </div>
-              </div>
             </div>
           </div>
         </section>

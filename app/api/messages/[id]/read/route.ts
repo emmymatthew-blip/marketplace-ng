@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next"
 import { NextResponse } from "next/server"
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { query } from "@/lib/db"
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
@@ -13,7 +13,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     // Check if message exists and belongs to the user
-    const messages = await query("SELECT * FROM messages WHERE id = ? AND receiverId = ?", [params.id, session.user.id])
+    const messages = await query('SELECT * FROM "messages" WHERE id = ? AND "receiverId" = ?', [params.id, session.user.id])
 
     if (!messages || (messages as any[]).length === 0) {
       return NextResponse.json(
@@ -23,7 +23,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     // Mark message as read
-    await query("UPDATE messages SET isRead = TRUE WHERE id = ?", [params.id])
+    await query('UPDATE "messages" SET "isRead" = TRUE WHERE id = ?', [params.id])
 
     return NextResponse.json({ success: true })
   } catch (error) {

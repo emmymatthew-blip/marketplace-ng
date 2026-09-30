@@ -1,0 +1,31 @@
+export { DashboardShell } from "./dashboard-shell"
+export { DashboardSidebar, NavLinks, dashboardNavItems } from "./dashboard-sidebar"
+export { DashboardHeader } from "./dashboard-header"
+export type { DashboardHeaderProps, BreadcrumbItem } from "./dashboard-header"
+export { DashboardPageContainer, dashboardSpacing } from "./dashboard-page-container"
+export { DashboardSection } from "./dashboard-section"
+export type { DashboardSectionProps } from "./dashboard-section"
+export { DashboardCard } from "./dashboard-card"
+export type { DashboardCardProps } from "./dashboard-card"
+export { DashboardEmptyState } from "./dashboard-empty-state"
+export type { DashboardEmptyStateProps } from "./dashboard-empty-state"
+export { DashboardStatCard } from "./dashboard-stat-card"
+export type { DashboardStatCardProps } from "./dashboard-stat-card"
+export { DashboardKpiCard } from "./dashboard-kpi-card"
+export type { DashboardKpiCardProps } from "./dashboard-kpi-card"
+export { DashboardSectionHeader } from "./dashboard-section-header"
+export type { DashboardSectionHeaderProps } from "./dashboard-section-header"
+export { StatusBadge } from "./status-badge"
+export type { StatusBadgeProps, StatusVariant } from "./status-badge"
+export { InsightCard } from "./insight-card"
+export type { InsightCardProps } from "./insight-card"
+export { ActivityFeedCard } from "./activity-feed-card"
+export type { ActivityFeedCardProps, ActivityItem } from "./activity-feed-card"
+export { DashboardFilterBar } from "./dashboard-filter-bar"
+export type { DashboardFilterBarProps, FilterOption } from "./dashboard-filter-bar"
+export {
+  WelcomeModal,
+  hasSeenWelcomeModal,
+  markWelcomeModalSeen,
+  getWelcomeModalStorageKey,
+} from "./welcome-modal"

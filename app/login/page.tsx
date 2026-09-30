@@ -26,10 +26,20 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard")
+    if (status === "authenticated" && session?.user) {
+      // Check for callbackUrl in query params
+      const urlParams = new URLSearchParams(window.location.search)
+      const callbackUrl = urlParams.get("callbackUrl")
+      
+      if (callbackUrl) {
+        router.push(callbackUrl)
+      } else if (session.user.role === "ADMIN") {
+        router.push("/admin/dashboard")
+      } else {
+        router.push("/dashboard")
+      }
     }
-  }, [status, router])
+  }, [status, session, router])
 
   // Show loading state while checking session
   if (status === "loading") {
@@ -58,24 +68,63 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError(result.error)
+        // Handle authentication errors gracefully
+        const errorMessage = result.error === "CredentialsSignin" 
+          ? "Invalid email or password" 
+          : "An error occurred during login. Please try again."
+        
+        setError(errorMessage)
         toast({
-          title: "Error",
-          description: "Invalid email or password",
+          title: "Login Failed",
+          description: errorMessage,
           variant: "destructive",
         })
-      } else {
-        router.push("/dashboard")
+      } else if (result?.ok) {
+        // Successful login - redirect based on role or callbackUrl
+        const urlParams = new URLSearchParams(window.location.search)
+        const callbackUrl = urlParams.get("callbackUrl")
+        
         toast({
           title: "Success",
           description: "You have been signed in successfully",
         })
+        
+        // Refresh router to get updated session, then redirect
+        router.refresh()
+        
+        // Wait a moment for session to update, then redirect
+        setTimeout(() => {
+          if (callbackUrl) {
+            router.push(callbackUrl)
+          } else {
+            // Check current session to determine redirect
+            // If session is not updated yet, default to dashboard which will redirect admins
+            if (session?.user?.role === "ADMIN") {
+              router.push("/admin/dashboard")
+            } else {
+              router.push("/dashboard")
+            }
+          }
+        }, 300)
+      } else {
+        // Unexpected result
+        setError("An unexpected error occurred. Please try again.")
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        })
       }
     } catch (error) {
-      setError("An unexpected error occurred")
+      // Handle unexpected errors gracefully
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "An unexpected error occurred. Please try again."
+      
+      setError(errorMessage)
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {
@@ -89,8 +138,8 @@ export default function LoginPage() {
       <header className="w-full fixed top-0 left-0 z-50  bg-[#326de0] shadow-md">
         <div className="container mx-auto flex h-16 items-center px-4">
           <Link href="/" className="flex items-center">
-            <Image src="/images/Nig-Print-Logo.png" alt="NG Marketplace Logo" width={48} height={48} className="mr-3" />
-            <span className="text-white text-xl font-bold tracking-wide">NG MARKETPLACE</span>
+                    <Image src="/images/Nig-Print-Logo.png" alt="PrintMarket NG Logo" width={48} height={48} className="mr-3" />
+        <span className="text-white text-xl font-bold tracking-wide">PRINTMARKET NG</span>
           </Link>
         </div>
       </header>
@@ -107,7 +156,7 @@ export default function LoginPage() {
           />
           <div className="absolute inset-0 bg-black/50" />
           <div className="absolute left-0 bottom-0 z-10 px-10 md:px-16 lg:px-24 pb-16 md:pb-20 lg:pb-28 flex flex-col items-start max-w-[90%]">
-            <span className="uppercase text-white font-bold text-base mb-3 tracking-widest drop-shadow-lg">Welcome to NG MARKETPLACE</span>
+            <span className="uppercase text-white font-bold text-base mb-3 tracking-widest drop-shadow-lg">Welcome to PRINTMARKET NG</span>
             <h1 className="text-3xl md:text-4xl lg:text-5xl  text-white leading-tight drop-shadow-2xl mb-2 max-w-xl">
               Grow your business to the rest of the world.
             </h1>
@@ -118,8 +167,8 @@ export default function LoginPage() {
           <div className="w-full h-full flex flex-col justify-center px-8 md:px-16 lg:px-24">
             <h2 className="text-3xl font-bold mb-6 text-[#222] text-left">Login</h2>
             {error && (
-              <div className="bg-red-100 text-red-700 text-sm p-2 rounded mb-4">
-                {error === "CredentialsSignin" ? "Invalid email or password" : error}
+              <div className="bg-red-50 border border-red-200 text-red-800 text-sm p-3 rounded-lg mb-4">
+                {error}
               </div>
             )}
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -180,7 +229,7 @@ export default function LoginPage() {
       </main>
       {/* Footer */}
       <footer className="w-full bg-[#326de0] fixed bottom-0 left-0 z-50 text-white text-center py-3 text-xs font-medium shadow-inner">
-        &copy;{new Date().getFullYear()} NG MARKETPLACE
+        &copy;{new Date().getFullYear()} PrintMarket NG
       </footer>
     </div>
   )

@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 import { query } from "@/lib/db"
 
 // Define validation schema
@@ -28,8 +28,8 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { userId, cipponId, isVerified } = verifySchema.parse(body)
 
-    // Check if user exists and is a printer
-    const users = await query("SELECT * FROM users WHERE id = ?", [userId])
+    // Check if user exists and is an end user printer
+    const users = await query('SELECT * FROM "User" WHERE id = ?', [userId])
 
     if (!users || (users as any[]).length === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
@@ -37,15 +37,15 @@ export async function POST(req: Request) {
 
     const user = (users as any[])[0]
 
-    if (user.role !== "PRINTER") {
-      return NextResponse.json({ error: "User is not a printer" }, { status: 400 })
+    if (user.role !== "END_USER_PRINTER") {
+      return NextResponse.json({ error: "User is not an end user printer" }, { status: 400 })
     }
 
     // Update user verification status
-    await query("UPDATE users SET isVerified = ?, cipponId = ? WHERE id = ?", [isVerified, cipponId, userId])
+    await query('UPDATE "User" SET "isVerified" = ?, "cipponMembershipNumber" = ? WHERE id = ?', [isVerified, cipponId, userId])
 
     // Fetch the updated user
-    const updatedUsers = await query("SELECT id, name, email, role, isVerified, cipponId FROM users WHERE id = ?", [
+    const updatedUsers = await query('SELECT id, name, email, role, "isVerified", "cipponMembershipNumber" FROM "User" WHERE id = ?', [
       userId,
     ])
 

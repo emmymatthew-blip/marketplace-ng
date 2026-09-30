@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { neon } from "@neondatabase/serverless"
-import { DATABASE_URL } from "@/lib/db"
+import { authOptions } from "@/lib/auth"
+import { query } from "@/lib/db"
 
 export async function PUT(request: Request) {
   try {
@@ -13,25 +12,64 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { name, companyName, phone, location, bio } = body
+    const {
+      name,
+      companyName,
+      phone,
+      location,
+      bio,
+      jobTitle,
+      companyWebsite,
+      role,
+      country,
+      cityState,
+      specialties,
+      yearsInBusiness,
+      teamSize,
+    } = body
 
-    const sql = neon(DATABASE_URL)
-
-    await sql`
-      UPDATE users
-      SET 
-        name = ${name},
-        "companyName" = ${companyName || null},
-        phone = ${phone || null},
-        location = ${location || null},
-        bio = ${bio || null},
+    await query(
+      `UPDATE "User" SET 
+        name = COALESCE(?, name),
+        "companyName" = COALESCE(?, "companyName"),
+        phone = COALESCE(?, phone),
+        location = COALESCE(?, location),
+        bio = COALESCE(?, bio),
+        "jobTitle" = COALESCE(?, "jobTitle"),
+        "companyWebsite" = COALESCE(?, "companyWebsite"),
+        role = COALESCE(?, role),
+        country = COALESCE(?, country),
+        "cityState" = COALESCE(?, "cityState"),
+        specialties = COALESCE(?, specialties),
+        "yearsInBusiness" = COALESCE(?, "yearsInBusiness"),
+        "teamSize" = COALESCE(?, "teamSize"),
         "updatedAt" = NOW()
-      WHERE id = ${session.user.id}
-    `
+       WHERE id = ?`,
+      [
+        name ?? null,
+        companyName ?? null,
+        phone ?? null,
+        location ?? null,
+        bio ?? null,
+        jobTitle ?? null,
+        companyWebsite ?? null,
+        role ?? null,
+        country ?? null,
+        cityState ?? null,
+        typeof specialties === "string" ? specialties : Array.isArray(specialties) ? JSON.stringify(specialties) : specialties ?? null,
+        typeof yearsInBusiness === "number"
+          ? yearsInBusiness
+          : typeof yearsInBusiness === "string" && yearsInBusiness.trim() !== ""
+            ? parseInt(yearsInBusiness, 10)
+            : null,
+        teamSize ?? null,
+        session.user.id,
+      ]
+    )
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("[PROFILE_UPDATE_ERROR]", error)
-    return new NextResponse("Internal error", { status: 500 })
+    return NextResponse.json({ error: "Failed to update profile" }, { status: 500 })
   }
 }

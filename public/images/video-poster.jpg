@@ -1,0 +1,12 @@
+# Video Poster Image Placeholder
+
+This file indicates where a video poster image should be placed.
+
+The actual image should be:
+- Filename: video-poster.jpg
+- Location: public/images/video-poster.jpg
+- Size: 1280x720 pixels (16:9 aspect ratio)
+- Format: JPG
+- Content: A professional printing/equipment related image that serves as a video thumbnail
+
+For now, the video component will work without this image, but adding it would improve the user experience by showing a proper thumbnail before the video plays.

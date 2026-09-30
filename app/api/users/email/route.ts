@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { neon } from "@neondatabase/serverless"
-import { DATABASE_URL } from "@/lib/db"
+import { authOptions } from "@/lib/auth"
+import { query } from "@/lib/db"
 
 export async function PUT(request: Request) {
   try {
@@ -16,26 +15,23 @@ export async function PUT(request: Request) {
     const { email } = body
 
     // Check if email is already in use
-    const sql = neon(DATABASE_URL)
-    const existingUser = await sql`
-      SELECT id FROM users WHERE email = ${email} AND id != ${session.user.id}
-    `
+    const existingUser = await query(
+      'SELECT id FROM "User" WHERE email = ? AND id != ?',
+      [email, session.user.id]
+    )
 
     if (existingUser.length > 0) {
-      return new NextResponse("Email already in use", { status: 400 })
+      return NextResponse.json({ error: "Email already in use" }, { status: 400 })
     }
 
-    await sql`
-      UPDATE users
-      SET 
-        email = ${email},
-        "updatedAt" = NOW()
-      WHERE id = ${session.user.id}
-    `
+    await query(
+      'UPDATE "User" SET email = ?, "updatedAt" = NOW() WHERE id = ?',
+      [email, session.user.id]
+    )
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("[EMAIL_UPDATE_ERROR]", error)
-    return new NextResponse("Internal error", { status: 500 })
+    return NextResponse.json({ error: "Failed to update email" }, { status: 500 })
   }
 }
